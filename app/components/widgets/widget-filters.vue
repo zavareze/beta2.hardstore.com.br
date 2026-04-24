@@ -52,7 +52,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SetFilterValuePayload } from '~/store/shop'
 import type { IFilterValues } from '~/interfaces/list'
 import type { IFilter } from '~/interfaces/filter'
 import { isDefaultFilterValue, serializeFilterValue } from '~/services/filters'
