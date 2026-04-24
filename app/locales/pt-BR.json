@@ -1,0 +1,10 @@
+{
+    "header": {
+      "topbar": {
+        "location": "Localização",
+        "currency": "Moeda", 
+        "language": "Linguagem"
+      }
+    }
+  }
+  

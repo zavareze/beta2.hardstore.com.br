@@ -1,0 +1,262 @@
+import { defineStore } from 'pinia'
+import accountApi from '~/api/account'
+
+export const useAccountStore = defineStore('account', {
+    state: () => ({
+        init: false,
+        logged: false,
+        loading: false,
+        loadingOrders: false,
+        error: '',
+        user: {} as {
+            id?: number
+            user?: string
+            name?: string
+            email?: string
+            tipoPessoa?: number
+            document?: string
+        },
+        rememberUser: '',
+        addresses: [] as any[],
+        orders: [] as any[],
+        order: {} as any,
+        token: '',
+        selectedOrder: {} as any,
+        selectedAddress: {} as any,
+        selectedUser: {} as any,
+        cep: '',
+        calculoFrete: {
+            error: '',
+            estimativa: '',
+            fretes: {} as any,
+            cep: { cep: '' }
+        } as any
+    }),
+    getters: {
+        isLoading: (state) => state.loading,
+        isLogged: (state) => state.logged,
+        hasError: (state) => state.error
+    },
+    actions: {
+        logout() {
+            this.user = {}
+            this.addresses = []
+            this.token = ''
+            this.logged = false
+            this.error = ''
+            this.loading = false
+            this.selectedOrder = {}
+            this.selectedAddress = {}
+            this.orders = []
+            this.order = {}
+            accountApi.setToken('')
+        },
+        async fetchLogin(payload: { user: string; password: string; redirect?: string }) {
+            this.loading = true
+            if (!payload.user || !payload.password) {
+                this.error = 'Você deve informar uma senha'
+                this.loading = false
+                return
+            }
+            try {
+                const result: any = await accountApi.login(payload)
+                if (result.statusCode === 200) {
+                    accountApi.setToken(result.data.token)
+                    this.token = result.data.token
+                    this.user = result.data.user
+                    this.addresses = result.data.addresses
+                    this.logged = true
+                    this.error = ''
+                    const router = useRouter()
+                    router.replace({ path: payload.redirect || '/account/dashboard' })
+                } else {
+                    this.error = result.message
+                }
+            } catch (e: any) {
+                this.error = e.message
+            } finally {
+                this.loading = false
+            }
+        },
+        async fetchMagicLink(payload: { magicLink: string; redirect?: string }) {
+            this.loading = true
+            if (!payload.magicLink) return
+            try {
+                const result: any = await accountApi.magicLink(payload.magicLink)
+                if (result.statusCode === 200) {
+                    accountApi.setToken(result.data.token)
+                    this.token = result.data.token
+                    this.user = result.data.user
+                    this.addresses = result.data.addresses
+                    this.logged = true
+                    this.error = ''
+                    const router = useRouter()
+                    router.replace({ path: payload.redirect || '/account/dashboard' })
+                } else {
+                    this.error = result.message
+                }
+            } catch (e: any) {
+                this.error = e.message
+            } finally {
+                this.loading = false
+            }
+        },
+        async fetchContact(payload: any) {
+            this.loading = true
+            try {
+                const result: any = await accountApi.contact(payload)
+                if (result.statusCode !== 200) this.error = result.message
+            } catch (e: any) {
+                this.error = e.message
+            } finally {
+                this.loading = false
+            }
+        },
+        recoverPassword(payload: any) {
+            return accountApi.recoverPassword(payload)
+        },
+        async fetchSearchAccount(payload: any) {
+            this.loading = true
+            try {
+                const result = await accountApi.searchAccount(payload)
+                return result
+            } catch (e: any) {
+                this.error = e.message
+                throw e
+            } finally {
+                this.loading = false
+            }
+        },
+        checkToken() {
+            if (this.token) {
+                accountApi.setToken(this.token)
+                accountApi.checkToken().catch((e: any) => {
+                    const data = e.response?.data
+                    if (data?.statusCode === 408) {
+                        this.logout()
+                        this.error = data.message
+                    }
+                })
+            }
+        },
+        async fetchOrders(payload?: any) {
+            accountApi.setToken(this.token)
+            this.loadingOrders = true
+            try {
+                const result: any = await accountApi.orders(payload)
+                if (result.status === 200) this.orders = result.data.data
+                else this.error = result.message
+            } catch (e: any) {
+                const data = e.response?.data
+                if (data?.statusCode === 408) {
+                    this.logout()
+                    this.error = data.message
+                    useRouter().replace({ path: '/account/login' })
+                }
+            } finally {
+                this.loadingOrders = false
+            }
+        },
+        async getOrder(payload: any) {
+            this.order = {}
+            const result: any = await accountApi.order(payload)
+            if (result.status === 200) {
+                this.order = result.data.data
+                return result.data.data
+            }
+            this.error = result.message
+            throw result
+        },
+        async getAddresses() {
+            try {
+                const result: any = await accountApi.getAddresses()
+                if (result.status === 200) this.addresses = result.data.data
+                else this.error = result.message
+            } catch (e: any) {
+                const data = e.response?.data
+                if (data?.statusCode === 408) {
+                    this.logout()
+                    this.error = data.message
+                    useRouter().replace({ path: '/account/login' })
+                }
+            }
+        },
+        async setAddress(payload: any) {
+            try {
+                const result: any = await accountApi.setAddress(payload)
+                if (result.status === 200) await this.getAddresses()
+                else this.error = result.message
+            } catch (e: any) {
+                const data = e.response?.data
+                if (data?.statusCode === 408) {
+                    this.logout()
+                    this.error = data.message
+                    useRouter().replace({ path: '/account/login' })
+                }
+            }
+        },
+        async setUser(payload: any) {
+            const result: any = await accountApi.setUser(payload)
+            if (result.status === 200) {
+                accountApi.setToken(result.data.data.token)
+                this.token = result.data.data.token
+                this.user = result.data.data.user
+                return result.data
+            }
+            this.error = result.message
+            throw result.response?.data
+        },
+        selectOrder(id: number) {
+            this.selectedOrder = this.orders.find(x => x.id === id * 1) || {}
+        },
+        selectAddress(id: number) {
+            this.selectedAddress = this.addresses.find(x => x.id * 1 === id * 1) || {}
+        },
+        buscaCEP(payload: any) {
+            return accountApi.buscaCEP(payload)
+        },
+        async calculaFrete(payload: any) {
+            const result: any = await accountApi.calculaFrete(payload)
+            if (payload.cart) {
+                if (result.data.cep.message) {
+                    this.calculoFrete = { error: result.data.cep.message, estimativa: '', fretes: {}, cep: { cep: '' } }
+                } else {
+                    const cepStr = Array(9 - result.data.cep.cep.toString().length).join('0') + result.data.cep.cep.toString()
+                    this.cep = cepStr
+                    this.calculoFrete = {
+                        error: '',
+                        estimativa: result.data.estimativa,
+                        estimativa_2: result.data.estimativa_2,
+                        estimativa_3: result.data.estimativa_3,
+                        fretes: result.data,
+                        cep: result.data.cep
+                    }
+                }
+            }
+            return result
+        },
+        createUser: (payload: any) => accountApi.createUser(payload),
+        createOrder: (payload: any) => accountApi.createOrder(payload),
+        createBoleto: (payload: any) => accountApi.createBoleto(payload),
+        createPix: (payload: any) => accountApi.createPix(payload),
+        getPix: (payload: any) => accountApi.getPix(payload),
+        createShopline: (payload: any) => accountApi.createShopline(payload),
+        createPaypalTransparent: (payload: any) => accountApi.createPaypalTransparent(payload),
+        executePaypal: (payload: any) => accountApi.executePaypal(payload),
+        createMercadoPago: (payload: any) => accountApi.mercadoPagoPayment(payload),
+        addNewsletter: (payload: any) => accountApi.addNewsletter(payload),
+        trackOrder: (payload: any) => accountApi.trackOrder(payload),
+        async getTracking(payload: any) {
+            const result: any = await accountApi.tracking(payload)
+            if (result.status === 200) {
+                this.order = result.data.data
+                return result.data.data
+            }
+            this.error = result.message
+            throw result
+        }
+    },
+    persist: {
+        pick: ['token', 'user', 'logged', 'rememberUser', 'cep']
+    }
+})
