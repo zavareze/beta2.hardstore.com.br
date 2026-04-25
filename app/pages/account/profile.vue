@@ -9,24 +9,85 @@
                 <div class="row no-gutters">
                     <div class="col-12 col-lg-7 col-xl-6">
                         <div class="form-group">
-                            <label for="profile-nome">Nome Completo</label>
-                            <mdb-input id="profile-nome" v-model="user.nome" type="text" label="Nome" outline
-                            required invalidFeedback="Você deve informar seu Nome" />
+                            <div class="form-floating">
+                                <input
+                                    id="profile-nome"
+                                    v-model="user.nome"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="Nome Completo"
+                                    autocomplete="name"
+                                    required
+                                >
+                                <label for="profile-nome">Nome Completo</label>
+                                <div class="invalid-feedback">Você deve informar seu Nome</div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <mdb-input id="profile-cpfcnpj" :value="formattedDocument" type="text" label="CPF/CNPJ" disabled outline />
+                            <div class="form-floating">
+                                <input
+                                    id="profile-cpfcnpj"
+                                    :value="formattedDocument"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="CPF/CNPJ"
+                                    disabled
+                                >
+                                <label for="profile-cpfcnpj">CPF/CNPJ</label>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <mdb-input id="profile-email" v-model="user.email" type="email" label="E-Mail" outline />
+                            <div class="form-floating">
+                                <input
+                                    id="profile-email"
+                                    v-model="user.email"
+                                    class="form-control"
+                                    type="email"
+                                    placeholder="E-Mail"
+                                    autocomplete="email"
+                                >
+                                <label for="profile-email">E-Mail</label>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <mdb-input id="profile-celular" v-model="user.telefone_celular" type="text" label="Telefone Celular" outline />
+                            <div class="form-floating">
+                                <input
+                                    id="profile-celular"
+                                    v-model="user.telefone_celular"
+                                    class="form-control"
+                                    type="text"
+                                    inputmode="tel"
+                                    placeholder="Telefone Celular"
+                                    autocomplete="tel"
+                                >
+                                <label for="profile-celular">Telefone Celular</label>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <mdb-input id="profile-residencial" v-model="user.telefone_residencial" type="text" outline label="Telefone Residencial" />
+                            <div class="form-floating">
+                                <input
+                                    id="profile-residencial"
+                                    v-model="user.telefone_residencial"
+                                    class="form-control"
+                                    type="text"
+                                    inputmode="tel"
+                                    placeholder="Telefone Residencial"
+                                >
+                                <label for="profile-residencial">Telefone Residencial</label>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <mdb-input id="profile-comercial" v-model="user.telefone_comercial" type="text" outline label="Telefone Comercial" />
+                            <div class="form-floating">
+                                <input
+                                    id="profile-comercial"
+                                    v-model="user.telefone_comercial"
+                                    class="form-control"
+                                    type="text"
+                                    inputmode="tel"
+                                    placeholder="Telefone Comercial"
+                                >
+                                <label for="profile-comercial">Telefone Comercial</label>
+                            </div>
                         </div>
                         <div class="form-group mt-5 mb-0">
                             <button class="btn btn-primary" type="button" @click="account.setUser(user)">

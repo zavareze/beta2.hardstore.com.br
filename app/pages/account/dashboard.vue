@@ -21,13 +21,13 @@
             </div>
 
             <AddressCard
-                :address="endereco()"
+                :address="defaultAddress"
                 class="dashboard__address"
                 featured
                 badge="Endereço Padrão"
             >
-                <AppLink :to="url.accountAddress({ id: endereco().id })">
-                    Editar Endereço
+                <AppLink :to="defaultAddressLink">
+                    {{ defaultAddress.id ? 'Editar Endereço' : 'Adicionar Endereço' }}
                 </AppLink>
             </AddressCard>
             <div class="dashboard__orders card">
@@ -41,7 +41,7 @@
                             <thead>
                                 <tr>
                                     <th>Pedido</th>
-                                    <th>Dat</th>
+                                    <th>Data</th>
                                     <th>Status</th>
                                     <th>Total</th>
                                 </tr>
@@ -58,7 +58,7 @@
                                     <td>
                                         {{ price(order.valor_total) }}
                                         para
-                                        {{ order.products.length }}
+                                        {{ (order.products || []).length }}
                                         item(s)
                                     </td>
                                 </tr>
@@ -81,13 +81,12 @@ const { price } = usePrice()
 
 useHead({ title: 'Minha Conta' })
 
-const orders = ref([])
-
-function endereco () {
+const defaultAddress = computed(() => {
     const addressId = account.user.padrao
-    const address = account.addresses.filter((endereco: any) => endereco.id === addressId)[0] ||
+    return account.addresses.filter((endereco: any) => endereco.id === addressId)[0] ||
         account.addresses[0] ||
         {
+            id: '',
             cep: '',
             logradouro: 'Sem Endereço',
             numero: '',
@@ -95,8 +94,11 @@ function endereco () {
             cidade: 'Sem Cidade',
             uf: 'RS'
         }
-    return address
-}
+})
+
+const defaultAddressLink = computed(() => {
+    return defaultAddress.value.id ? url.accountAddress(defaultAddress.value) : '/account/addresses/new'
+})
 
 onBeforeMount(() => {
     if (!account.user.document)

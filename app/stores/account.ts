@@ -15,6 +15,7 @@ export const useAccountStore = defineStore('account', {
             email?: string
             tipoPessoa?: number
             document?: string
+            padrao?: number | string
         },
         rememberUser: '',
         addresses: [] as any[],
@@ -182,13 +183,20 @@ export const useAccountStore = defineStore('account', {
             throw result
         },
         async getAddresses() {
+            if (!this.token) {
+                this.logout()
+                useRouter().replace({ path: '/account/login' })
+                return
+            }
+
+            accountApi.setToken(this.token)
             try {
                 const result: any = await accountApi.getAddresses()
                 if (result.status === 200) this.addresses = result.data.data
                 else this.error = result.message
             } catch (e: any) {
                 const data = e.response?.data
-                if (data?.statusCode === 408) {
+                if ([400, 401, 408].includes(data?.statusCode)) {
                     this.logout()
                     this.error = data.message
                     useRouter().replace({ path: '/account/login' })
@@ -196,13 +204,20 @@ export const useAccountStore = defineStore('account', {
             }
         },
         async setAddress(payload: any) {
+            if (!this.token) {
+                this.logout()
+                useRouter().replace({ path: '/account/login' })
+                return
+            }
+
+            accountApi.setToken(this.token)
             try {
                 const result: any = await accountApi.setAddress(payload)
                 if (result.status === 200) await this.getAddresses()
                 else this.error = result.message
             } catch (e: any) {
                 const data = e.response?.data
-                if (data?.statusCode === 408) {
+                if ([400, 401, 408].includes(data?.statusCode)) {
                     this.logout()
                     this.error = data.message
                     useRouter().replace({ path: '/account/login' })
@@ -210,6 +225,13 @@ export const useAccountStore = defineStore('account', {
             }
         },
         async setUser(payload: any) {
+            if (!this.token && (payload.id || payload.nova_senha)) {
+                this.logout()
+                useRouter().replace({ path: '/account/login' })
+                throw new Error('Sessão expirada. Faça login novamente.')
+            }
+
+            if (this.token) accountApi.setToken(this.token)
             const result: any = await accountApi.setUser(payload)
             if (result.status === 200) {
                 accountApi.setToken(result.data.data.token)

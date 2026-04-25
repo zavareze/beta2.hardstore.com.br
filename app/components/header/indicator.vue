@@ -13,7 +13,7 @@
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"
     >
-        <AppLink v-if="to && trigger !== 'click'" :to="to" class="indicator__button" @click.native="onClick">
+        <AppLink v-if="to && trigger !== 'click'" :to="to" class="indicator__button" @click="onClick">
             <span class="indicator__area">
                 <slot name="icon" />
                 <span v-if="value !== null" class="indicator__value">{{ value }}</span>

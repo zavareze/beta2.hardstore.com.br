@@ -32,7 +32,7 @@
                 <!-- This is a synthetic element that allows to adjust the vertical offset of the submenu using CSS. -->
                 <div class="menu__item-submenu-offset" />
 
-                <AppLink v-if="item.url" :to="item.url" class="menu__item-link" @click.native="onItemClick(item)">
+                <AppLink v-if="item.url" :to="item.url" class="menu__item-link" @click="onItemClick(item)">
                     <div v-if="item.icon" class="menu__item-icon">
                         <!--suppress HtmlUnknownTarget -->
                         <img :src="url.img(item.icon)" alt="">

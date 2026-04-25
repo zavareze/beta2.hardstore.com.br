@@ -9,10 +9,30 @@
                 <div class="row no-gutters">
                     <div class="col-12 col-lg-7 col-xl-6">
                         <div class="form-group">
-                            <mdb-input id="password-new" v-model="password.nova_senha" type="password" label="Nova Senha" outline />
+                            <div class="form-floating">
+                                <input
+                                    id="password-new"
+                                    v-model="password.nova_senha"
+                                    class="form-control"
+                                    type="password"
+                                    placeholder="Nova Senha"
+                                    autocomplete="new-password"
+                                >
+                                <label for="password-new">Nova Senha</label>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <mdb-input id="password-confirm" v-model="password.confirme_senha" type="password" label="Confirme Nova Senha" outline />
+                            <div class="form-floating">
+                                <input
+                                    id="password-confirm"
+                                    v-model="password.confirme_senha"
+                                    class="form-control"
+                                    type="password"
+                                    placeholder="Confirme Nova Senha"
+                                    autocomplete="new-password"
+                                >
+                                <label for="password-confirm">Confirme Nova Senha</label>
+                            </div>
                         </div>
                         <div class="form-group mt-5 mb-0">
                             <button class="btn btn-primary" type="button" @click="mudaSenha()">

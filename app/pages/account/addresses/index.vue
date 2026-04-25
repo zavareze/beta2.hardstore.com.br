@@ -1,5 +1,8 @@
 <template>
     <AccountLayout>
+        <div v-if="message" :class="['alert mb-3', messageType === 'success' ? 'alert-success' : 'alert-danger']">
+            {{ message }}
+        </div>
         <div class="addresses-list">
             <AppLink to="/account/addresses/new" class="addresses-list__item addresses-list__item--new">
                 <div class="addresses-list__plus" />
@@ -12,13 +15,23 @@
             <template v-for="address in account.addresses" :key="address.id">
                 <AddressCard
                     :address="address"
-                    :badge="address.default ? 'Default' : ''"
+                    :badge="isDefaultAddress(address) ? 'Endereço Padrão' : ''"
                     class="addresses-list__item"
                 >
                     <AppLink :to="url.accountAddress(address)">
                         Editar
                     </AppLink>
                     &nbsp;&nbsp;
+                    <a
+                        v-if="!isDefaultAddress(address)"
+                        href="#"
+                        @click.prevent="setDefaultAddress(address)"
+                    >
+                        {{ defaultLoading === String(address.id) ? 'Salvando...' : 'Definir como padrão' }}
+                    </a>
+                    <template v-if="!isDefaultAddress(address)">
+                        &nbsp;&nbsp;
+                    </template>
                     <a href="#" @click.prevent="selected = address; useModal().show('my-modal')">
                         Remover
                     </a>
@@ -50,6 +63,42 @@ const url = useUrl()
 useHead({ title: 'Lista de Endereços' })
 
 const selected = ref({})
+const message = ref('')
+const messageType = ref<'success' | 'danger'>('success')
+const defaultLoading = ref<string | null>(null)
+
+function isDefaultAddress(address: any) {
+    const addressDefault = address.default === true || String(address.default) === '1'
+
+    return addressDefault || String(address.id) === String(account.user.padrao || '')
+}
+
+async function setDefaultAddress(address: any) {
+    if (isDefaultAddress(address) || defaultLoading.value) return
+
+    message.value = ''
+    defaultLoading.value = String(address.id)
+
+    try {
+        await account.setUser({
+            ...account.user,
+            padrao: address.id,
+            nova_senha: '',
+            confirme_senha: ''
+        })
+        account.user = {
+            ...account.user,
+            padrao: address.id
+        }
+        messageType.value = 'success'
+        message.value = 'Endereço padrão atualizado com sucesso.'
+    } catch (error: any) {
+        messageType.value = 'danger'
+        message.value = error?.message || 'Não foi possível definir o endereço padrão agora.'
+    } finally {
+        defaultLoading.value = null
+    }
+}
 
 onBeforeMount(() => {
     if (!account.user.document)

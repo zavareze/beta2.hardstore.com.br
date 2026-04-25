@@ -17,48 +17,15 @@
                                 Painel
                             </h4>
                             <ul>
-                                <NuxtLink v-slot="{ isActive }" :exact="true" :to="url.accountDashboard()">
-                                    <li :class="['account-nav__item', {'account-nav__item--active': isActive}]">
-                                        <AppLink :to="url.accountDashboard()">
-                                            Dashboard
-                                        </AppLink>
-                                    </li>
-                                </NuxtLink>
-                                <NuxtLink v-slot="{ isActive }" :exact="true" :to="url.accountOrders()">
-                                    <li :class="['account-nav__item', {'account-nav__item--active': isActive}]">
-                                        <AppLink :to="url.accountOrders()">
-                                            Meus Pedidos
-                                        </AppLink>
-                                    </li>
-                                </NuxtLink>
-                                <NuxtLink v-slot="{ isActive }" :exact="true" :to="url.accountProfile()">
-                                    <li :class="['account-nav__item', {'account-nav__item--active': isActive}]">
-                                        <AppLink :to="url.accountProfile()">
-                                            Meu Cadastro
-                                        </AppLink>
-                                    </li>
-                                </NuxtLink>
-                                <NuxtLink v-slot="{ isActive }" :exact="true" :to="url.accountAddresses()">
-                                    <li :class="['account-nav__item', {'account-nav__item--active': isActive}]">
-                                        <AppLink :to="url.accountAddresses()">
-                                            Endereços
-                                        </AppLink>
-                                    </li>
-                                </NuxtLink>
-                                <NuxtLink v-slot="{ isActive }" :exact="true" :to="url.accountPassword()">
-                                    <li :class="['account-nav__item', {'account-nav__item--active': isActive}]">
-                                        <AppLink :to="url.accountPassword()">
-                                            Alterar Senha
-                                        </AppLink>
-                                    </li>
-                                </NuxtLink>
-                                <NuxtLink v-slot="{ isActive }" :exact="true" to="/account/login">
-                                    <li :class="['account-nav__item', {'account-nav__item--active': isActive}]">
-                                        <AppLink to="/account/login">
-                                            Sair
-                                        </AppLink>
-                                    </li>
-                                </NuxtLink>
+                                <li
+                                    v-for="item in navItems"
+                                    :key="item.to"
+                                    :class="['account-nav__item', {'account-nav__item--active': isActive(item.to)}]"
+                                >
+                                    <NuxtLink :to="item.to">
+                                        {{ item.title }}
+                                    </NuxtLink>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -73,4 +40,18 @@
 
 <script setup lang="ts">
 const url = useUrl()
+const route = useRoute()
+
+const navItems = [
+    { title: 'Dashboard', to: url.accountDashboard() },
+    { title: 'Meus Pedidos', to: url.accountOrders() },
+    { title: 'Meu Cadastro', to: url.accountProfile() },
+    { title: 'Endereços', to: url.accountAddresses() },
+    { title: 'Alterar Senha', to: url.accountPassword() },
+    { title: 'Sair', to: '/account/login' }
+]
+
+function isActive(to: string) {
+    return route.path === to
+}
 </script>
