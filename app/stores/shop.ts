@@ -163,6 +163,6 @@ export const useShopStore = defineStore('shop', {
         }
     },
     persist: {
-        pick: ['categoryList', 'brands', 'lastViewed', 'layout', 'orderBy', 'show', 'maxDiscount']
+        pick: ['categoryList', 'brands', 'lastViewed', 'layout', 'orderBy', 'show']
     }
 })

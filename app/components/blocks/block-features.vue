@@ -80,6 +80,8 @@ withDefaults(defineProps<{
 
 const shopStore = useShopStore()
 
+await useAsyncData('maxDiscount', () => shopStore.fetchMaxDiscount())
+
 onMounted(() => {
     shopStore.fetchMaxDiscount()
 })

@@ -1,7 +1,7 @@
 <template>
     <div class="account-menu">
-        <BlockLoader v-show="accountStore.isLoading" />
-        <form class="account-menu__form" v-show="!accountStore.isLogged && !accountStore.isLoading" @submit.prevent="accountStore.fetchLogin({ user, password, redirect: '/account/dashboard' })">
+        <BlockLoader v-show="isMounted && accountStore.isLoading" />
+        <form class="account-menu__form" v-show="(!isMounted || !accountStore.isLogged) && !accountStore.isLoading" @submit.prevent="accountStore.fetchLogin({ user, password, redirect: '/account/dashboard' })">
             <div class="account-menu__form-title">
                 Minha Conta
             </div>
@@ -36,7 +36,7 @@
                 </AppLink>
             </div>
         </form>
-        <div v-show="accountStore.isLogged && !accountStore.isLoading">
+        <div v-show="isMounted && accountStore.isLogged && !accountStore.isLoading">
             <div class="account-menu__divider" />
             <AppLink :to="url.account()" class="account-menu__user">
                 <div class="account-menu__user-avatar">
@@ -88,11 +88,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAccountStore } from '~/stores/account'
 
 const url = useUrl()
 const accountStore = useAccountStore()
+
+const isMounted = ref(false)
+onMounted(() => { isMounted.value = true })
 
 const user = ref('')
 const password = ref('')

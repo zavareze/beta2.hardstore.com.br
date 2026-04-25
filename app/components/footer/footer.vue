@@ -26,10 +26,10 @@
                                 Links Rápidos
                             </h5>
                             <ul class="footer-links__list">
-                                <li class="footer-links__item" v-show="accountStore.isLogged"><NuxtLink :to="url.accountDashboard()" class="footer-links__link">Dashboard</NuxtLink></li>
-                                <li class="footer-links__item" v-show="accountStore.isLogged"><NuxtLink :to="url.accountOrders()" class="footer-links__link">Meus Pedidos</NuxtLink></li>
-                                <li class="footer-links__item" v-show="accountStore.isLogged"><NuxtLink :to="url.accountProfile()" class="footer-links__link">Meu Cadastro</NuxtLink></li>
-                                <li class="footer-links__item" v-show="!accountStore.isLogged"><NuxtLink to="/account/login" class="footer-links__link">Minha Conta</NuxtLink></li>
+                                <li class="footer-links__item" v-show="isMounted && accountStore.isLogged"><NuxtLink :to="url.accountDashboard()" class="footer-links__link">Dashboard</NuxtLink></li>
+                                <li class="footer-links__item" v-show="isMounted && accountStore.isLogged"><NuxtLink :to="url.accountOrders()" class="footer-links__link">Meus Pedidos</NuxtLink></li>
+                                <li class="footer-links__item" v-show="isMounted && accountStore.isLogged"><NuxtLink :to="url.accountProfile()" class="footer-links__link">Meu Cadastro</NuxtLink></li>
+                                <li class="footer-links__item" v-show="!isMounted || !accountStore.isLogged"><NuxtLink to="/account/login" class="footer-links__link">Minha Conta</NuxtLink></li>
                                 <li class="footer-links__item"><NuxtLink to="/shop/compare" class="footer-links__link">Compare</NuxtLink></li>
                                 <li class="footer-links__item"><NuxtLink to="/shop/wishlist" class="footer-links__link">Wish List</NuxtLink></li>
                                 <li class="footer-links__item"><NuxtLink to="/blog/category-list" class="footer-links__link">Blog</NuxtLink></li>
@@ -59,8 +59,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useAccountStore } from '~/stores/account'
 
 const accountStore = useAccountStore()
 const url = useUrl()
+
+const isMounted = ref(false)
+onMounted(() => { isMounted.value = true })
 </script>

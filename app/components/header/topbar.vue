@@ -24,8 +24,8 @@
                     </AppLink>
                 </div>
                 <div class="topbar__spring" />
-                <div class="topbar__item" :class="{ 'topbar__item--link': accountStore.isLogged && !accountStore.isLoading }">
-                    <Dropdown v-show="accountStore.isLogged && !accountStore.isLoading"
+                <div class="topbar__item" :class="{ 'topbar__item--link': isMounted && accountStore.isLogged && !accountStore.isLoading }">
+                    <Dropdown v-show="isMounted && accountStore.isLogged && !accountStore.isLoading"
                         :items="[
                             { title: 'Dashboard', url: url.accountDashboard()},
                             { title: 'Meus Pedidos', url: url.accountOrders()},
@@ -36,7 +36,7 @@
                     >
                         Minha Conta
                     </Dropdown>
-                    <AppLink to="/account/login" v-show="!accountStore.isLogged && !accountStore.isLoading" class="topbar-link">
+                    <AppLink to="/account/login" v-show="(!isMounted || !accountStore.isLogged) && !accountStore.isLoading" class="topbar-link">
                         Minha Conta
                     </AppLink>
                 </div>
@@ -52,8 +52,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useAccountStore } from '~/stores/account'
 
 const url = useUrl()
 const accountStore = useAccountStore()
+
+const isMounted = ref(false)
+onMounted(() => { isMounted.value = true })
 </script>
