@@ -5,7 +5,8 @@ export default defineNuxtConfig({
     typescript: {
         strict: false
     },
-    devtools: { enabled: true },
+    debug: false,
+    devtools: { enabled: false },
 
     ssr: true,
 
@@ -72,6 +73,7 @@ export default defineNuxtConfig({
 
     vite: {
         server: {
+            allowedHosts: ['beta2.hardstore.com.br'],
             fs: {
                 strict: false,
                 allow: ['C:/']

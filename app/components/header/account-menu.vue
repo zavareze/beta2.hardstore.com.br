@@ -1,7 +1,7 @@
 <template>
     <div class="account-menu">
         <BlockLoader v-show="accountStore.isLoading" />
-        <form class="account-menu__form" v-show="!accountStore.isLogged && !accountStore.isLoading">
+        <form class="account-menu__form" v-show="!accountStore.isLogged && !accountStore.isLoading" @submit.prevent="accountStore.fetchLogin({ user, password, redirect: '/account/dashboard' })">
             <div class="account-menu__form-title">
                 Minha Conta
             </div>
@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="form-group account-menu__form-button">
-                <button type="button" class="btn btn-primary btn-sm" @click="accountStore.fetchLogin({ user, password, redirect: '/account/dashboard' })">
+                <button type="submit" class="btn btn-primary btn-sm">
                     Login
                 </button>
             </div>
@@ -103,7 +103,7 @@ function change() {
 }
 
 function logout() {
-    accountStore.logout({})
+    accountStore.logout()
 }
 </script>
 <style scoped>

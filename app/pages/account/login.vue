@@ -19,30 +19,38 @@
                                     Login
                                 </h3>
                                 <BlockLoader v-show="account.isLoading" />
-                                <form v-show="!account.isLoading">
+                                <form v-show="!account.isLoading" @submit.prevent="account.fetchLogin({ user, password, redirect: loginRedirect })">
                                     <div class="form-group">
-                                        <label for="login-email">CPF ou E-mail</label>
-                                        <input
-                                            id="login-email"
-                                            v-model="user"
-                                            class="form-control"
-                                            type="text"
-                                            placeholder="Informe o CPF ou Email"
-                                        >
+                                        <div class="form-floating">
+                                            <input
+                                                id="login-email"
+                                                v-model="user"
+                                                class="form-control"
+                                                type="text"
+                                                placeholder="CPF ou E-mail"
+                                                autocomplete="username"
+                                                required
+                                            >
+                                            <label for="login-email">CPF ou E-mail</label>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="login-password">Senha</label>
-                                        <input
-                                            id="login-password"
-                                            v-model="password"
-                                            class="form-control"
-                                            type="password"
-                                            placeholder="Senha"
-                                            :class="{ 'is-invalid': account.hasError }"
-                                            @keyup="change()"
-                                        >
-                                        <div class="invalid-feedback">
-                                            {{ account.hasError }}
+                                        <div class="form-floating">
+                                            <input
+                                                id="login-password"
+                                                v-model="password"
+                                                class="form-control"
+                                                type="password"
+                                                placeholder="Senha"
+                                                autocomplete="current-password"
+                                                required
+                                                :class="{ 'is-invalid': account.hasError }"
+                                                @keyup="change()"
+                                            >
+                                            <label for="login-password">Senha</label>
+                                            <div class="invalid-feedback">
+                                                {{ account.hasError }}
+                                            </div>
                                         </div>
                                         <small class="form-text text-muted">
                                             <a @click="useModal().show('modalForgotPassword')">Esqueci minha Senha</a>
@@ -60,13 +68,15 @@
                                                         @click="lembrar()"
                                                     >
                                                     <span class="input-check__box" />
-                                                    <Check9x7Svg class="input-check__icon" />
+                                                    <svg class="input-check__icon" xmlns="http://www.w3.org/2000/svg" width="9px" height="7px" viewBox="0 0 9 7" aria-hidden="true" focusable="false">
+                                                        <path d="M9.002,1.396 L3.461,7.002 L-0.002,3.498 L1.383,2.096 L3.461,4.199 L7.617,-0.006 L9.002,1.396 Z" />
+                                                    </svg>
                                                 </span>
                                             </span>
                                             <label class="form-check-label" for="login-remember">Lembre-se</label>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-primary mt-4" @click="account.fetchLogin({ user, password, redirect: route.query.redirect })">
+                                    <button type="submit" class="btn btn-primary mt-4">
                                         Entrar
                                     </button>
                                 </form>
@@ -79,29 +89,39 @@
                                 <h3 class="card-title">
                                     Registrar
                                 </h3>
-                                <form>
+                                <form @submit.prevent="registrar()">
                                     <div class="form-group">
-                                        <label for="register-email">E-mail</label>
-                                        <input
-                                            id="register-email"
-                                            class="form-control"
-                                            v-model="novo.email"
-                                            type="email"
-                                            placeholder="Digite seu email"
-                                        >
+                                        <div class="form-floating">
+                                            <input
+                                                id="register-email"
+                                                class="form-control"
+                                                v-model="novo.email"
+                                                type="email"
+                                                placeholder="email@exemplo.com"
+                                                autocomplete="email"
+                                                required
+                                            >
+                                            <label for="register-email">E-mail</label>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="register-cep">CEP</label>
-                                        <input
-                                            id="register-password"
-                                            class="form-control"
-                                            v-model="novo.cep"
-                                            v-mdb-input-mask="'♠♠♠♠♠-♠♠♠'"
-                                            type="text"
-                                            placeholder="CEP"
-                                        >
+                                        <div class="form-floating">
+                                            <input
+                                                id="register-cep"
+                                                class="form-control"
+                                                v-model="novo.cep"
+                                                type="text"
+                                                inputmode="numeric"
+                                                maxlength="9"
+                                                placeholder="CEP"
+                                                autocomplete="postal-code"
+                                                required
+                                                @input="formatCep"
+                                            >
+                                            <label for="register-cep">CEP</label>
+                                        </div>
                                     </div>
-                                    <button type="button" class="btn btn-primary mt-4" @click="registrar()">
+                                    <button type="submit" class="btn btn-primary mt-4">
                                         Registrar-se
                                     </button>
                                 </form>
@@ -126,16 +146,20 @@ useHead({ title: 'Log In' })
 const user = ref(account.rememberUser || '')
 const password = ref('')
 const rememberUser = ref(account.rememberUser || false)
+const loginRedirect = computed(() => {
+    const redirect = route.query.redirect
+    return Array.isArray(redirect) ? redirect[0] || undefined : redirect || undefined
+})
 const novo = ref({
     email: '',
     cep: ''
 })
 
 onMounted(() => {
-    account.logout({})
+    account.logout()
     account.init()
     if (route.query.magic_link)
-        account.fetchMagicLink({ magicLink: route.query.magic_link, redirect: route.query.redirect })
+        account.fetchMagicLink({ magicLink: String(route.query.magic_link), redirect: loginRedirect.value })
 })
 
 function change () {
@@ -143,7 +167,12 @@ function change () {
 }
 
 function registrar () {
-    router.push('/account/signin?email=' + novo.value.email + '&cep=' + novo.value.cep)
+    router.push('/account/signin?email=' + encodeURIComponent(novo.value.email) + '&cep=' + encodeURIComponent(novo.value.cep))
+}
+
+function formatCep () {
+    const digits = novo.value.cep.replace(/\D/g, '').slice(0, 8)
+    novo.value.cep = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
 }
 
 function lembrar () {

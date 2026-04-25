@@ -51,6 +51,16 @@ export const useAccountStore = defineStore('account', {
             this.order = {}
             accountApi.setToken('')
         },
+        init() {
+            this.error = ''
+            if (this.token) accountApi.setToken(this.token)
+        },
+        setError(message = '') {
+            this.error = message
+        },
+        fetchRememberUser(user = '') {
+            this.rememberUser = user
+        },
         async fetchLogin(payload: { user: string; password: string; redirect?: string }) {
             this.loading = true
             if (!payload.user || !payload.password) {
@@ -67,13 +77,17 @@ export const useAccountStore = defineStore('account', {
                     this.addresses = result.data.addresses
                     this.logged = true
                     this.error = ''
+                    const redirect = typeof payload.redirect === 'string' && payload.redirect.startsWith('/') && !payload.redirect.startsWith('//')
+                        ? payload.redirect
+                        : '/account/dashboard'
                     const router = useRouter()
-                    router.replace({ path: payload.redirect || '/account/dashboard' })
+                    router.replace({ path: redirect })
                 } else {
-                    this.error = result.message
+                    this.error = result.message || 'Não foi possível efetuar login.'
                 }
             } catch (e: any) {
-                this.error = e.message
+                console.error('account login request failed', e)
+                this.error = 'Não foi possível efetuar login agora. Tente novamente em alguns instantes.'
             } finally {
                 this.loading = false
             }
@@ -235,7 +249,26 @@ export const useAccountStore = defineStore('account', {
             }
             return result
         },
-        createUser: (payload: any) => accountApi.createUser(payload),
+        async createUser(payload: any) {
+            this.loading = true
+            this.error = ''
+            try {
+                const result: any = await accountApi.createUser(payload)
+                if (result.status === 200 && result.data?.statusCode === 200) {
+                    return result.data
+                }
+
+                const message = result.data?.message || 'Não foi possível concluir o cadastro.'
+                this.error = message
+                throw new Error(message)
+            } catch (e: any) {
+                const message = e.response?.data?.message || e.message || 'Não foi possível concluir o cadastro agora. Tente novamente em alguns instantes.'
+                this.error = message
+                throw new Error(message)
+            } finally {
+                this.loading = false
+            }
+        },
         createOrder: (payload: any) => accountApi.createOrder(payload),
         createBoleto: (payload: any) => accountApi.createBoleto(payload),
         createPix: (payload: any) => accountApi.createPix(payload),
