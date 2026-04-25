@@ -54,7 +54,7 @@
                                                         id="checkout-tipo-pessoa"
                                                         v-model="user.tipo_pessoa"
                                                         class="form-select"
-                                                        @change="checkTipoPessoa()"
+                                                        @change="checkTipoPessoa"
                                                     >
                                                         <option v-for="option in tipoPessoaOptions" :key="option.value" :value="option.value">
                                                             {{ option.text }}
@@ -375,9 +375,14 @@ function checkForm(event: Event) {
     cadastrar()
 }
 
-function checkTipoPessoa () {
+function checkTipoPessoa (event?: Event) {
+    const selectedType = (event?.target as HTMLSelectElement | null)?.value
+    if (selectedType === '1' || selectedType === '2') {
+        user.value.tipo_pessoa = selectedType
+    }
+    clearDocumentValidation()
     formatDocument()
-    if (user.value.document) validateDocumentField(fieldError.value === 'document')
+    if (user.value.document) validateDocumentField(false)
 }
 
 function setUF (uf) {
@@ -530,9 +535,10 @@ function validateDocumentField (showError = false) {
 
 function getDocumentError () {
     const document = user.value.document.replace(/\D/g, '')
+    const isCnpj = user.value.tipo_pessoa === '2' || document.length > 11
 
     if (!document) return 'Você deve informar seu CPF/CNPJ.'
-    if (user.value.tipo_pessoa === '2') {
+    if (isCnpj) {
         if (document.length !== 14) return 'CNPJ inválido, verifique e tente novamente.'
         if (!isValidCnpj(document)) return 'CNPJ inválido, verifique e tente novamente.'
         return ''
@@ -541,6 +547,15 @@ function getDocumentError () {
     if (document.length !== 11) return 'CPF inválido, verifique e tente novamente.'
     if (!isValidCpf(document)) return 'CPF inválido, verifique e tente novamente.'
     return ''
+}
+
+function clearDocumentValidation () {
+    documentRef.value?.setCustomValidity('')
+    if (fieldError.value === 'document') {
+        fieldError.value = ''
+        messageError.value = ''
+        createError.value = ''
+    }
 }
 
 function validateEmailField (showError = false) {
@@ -632,9 +647,10 @@ function formatCep () {
 }
 
 function formatDocument () {
-    const maxLength = user.value.tipo_pessoa === '2' ? 14 : 11
+    const isCnpj = user.value.tipo_pessoa === '2'
+    const maxLength = isCnpj ? 14 : 11
     const digits = user.value.document.replace(/\D/g, '').slice(0, maxLength)
-    user.value.document = user.value.tipo_pessoa === '2' ? formatCnpj(digits) : formatCpf(digits)
+    user.value.document = isCnpj ? formatCnpj(digits) : formatCpf(digits)
 }
 
 function formatCpf (digits: string) {

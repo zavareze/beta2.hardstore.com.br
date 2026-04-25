@@ -14,7 +14,7 @@
                             required invalidFeedback="Você deve informar seu Nome" />
                         </div>
                         <div class="form-group">
-                            <mdb-input id="profile-cpfcnpj" :value="user.document.toString().padStart(11, '0')" type="text" label="CPF/CNPJ" disabled outline />
+                            <mdb-input id="profile-cpfcnpj" :value="formattedDocument" type="text" label="CPF/CNPJ" disabled outline />
                         </div>
                         <div class="form-group">
                             <mdb-input id="profile-email" v-model="user.email" type="email" label="E-Mail" outline />
@@ -49,6 +49,11 @@ const router = useRouter()
 useHead({ title: 'Editar Cadastro' })
 
 const user = ref(Object.assign({ document: '' }, account.user))
+const formattedDocument = computed(() => {
+    const document = String(user.value.document || '').replace(/\D/g, '')
+    const length = document.length > 11 ? 14 : 11
+    return document.padStart(length, '0')
+})
 
 onBeforeMount(() => {
     if (!account.user.document)
