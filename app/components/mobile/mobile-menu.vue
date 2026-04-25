@@ -23,7 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { useMobileMenuStore } from '~/stores/mobileMenu'
 import { useShopStore } from '~/stores/shop'
 import Cross20Svg from '~/svg/cross-20.svg'
@@ -31,8 +30,9 @@ import Cross20Svg from '~/svg/cross-20.svg'
 const mobileMenuStore = useMobileMenuStore()
 const shopStore = useShopStore()
 
-onMounted(() => {
-    shopStore.fetchCategory({})
+await useAsyncData('mobile-menu-categories', async () => {
+    await shopStore.fetchCategory({ categorySlug: null })
+    return true
 })
 
 function onItemClick(item: any) {

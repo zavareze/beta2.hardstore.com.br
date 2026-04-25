@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { useHead } from '@unhead/vue'
+import { useHead } from '#imports'
 
 useHead({
     titleTemplate: (titleChunk) => titleChunk

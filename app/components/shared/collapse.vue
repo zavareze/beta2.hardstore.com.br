@@ -1,12 +1,10 @@
 <script setup lang="ts">
-let uniqueId = 0
-
 const props = defineProps<{
     isOpen?: boolean
     itemOpenClass?: string
 }>()
 
-const id = ++uniqueId
+const id = useId()
 const stateIsOpen = ref(props.isOpen ?? false)
 
 watch(() => props.isOpen, (val) => { val ? open() : close() })

@@ -99,7 +99,7 @@ const password = ref('')
 const showForgotModal = ref(false)
 
 function change() {
-    accountStore.setError('')
+    accountStore.error = ''
 }
 
 function logout() {

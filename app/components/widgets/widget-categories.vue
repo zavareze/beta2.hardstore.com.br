@@ -4,16 +4,14 @@
             Categorias
         </h4>
         <ul class="widget-categories__list">
-            <Collapse v-for="(category, i) in categories" :key="i" v-slot:default="{ itemClasses }" item-open-class="widget-categories__item--open">
-                <li :class="['widget-categories__item', itemClasses]">
-                    <div class="widget-categories__row">
-                        <a @click="fetchPlaylist(category.id)">
-                            <ArrowRoundedRight6x9Svg class="widget-categories__arrow" />
-                            {{ category.snippet.title }}
-                        </a>
-                    </div>
-                </li>
-            </Collapse>
+            <li v-for="(category, i) in categories" :key="i" class="widget-categories__item">
+                <div class="widget-categories__row">
+                    <a @click="fetchPlaylist(category.id)">
+                        <ArrowRoundedRight6x9Svg class="widget-categories__arrow" />
+                        {{ category.snippet.title }}
+                    </a>
+                </div>
+            </li>
         </ul>
     </div>
 </template>
