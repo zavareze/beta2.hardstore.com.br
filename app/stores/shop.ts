@@ -8,7 +8,7 @@ import shopApi from '~/api/shop'
 
 export const useShopStore = defineStore('shop', {
     state: () => ({
-        init: false,
+        isInitialized: false,
         categorySlug: null as string | null,
         categoryIsLoading: true,
         category: null as ICategory | null,
@@ -38,7 +38,7 @@ export const useShopStore = defineStore('shop', {
             tags: [] as any[]
         } as any,
         layout: 'list',
-        orderBy: 'price_asc',
+        orderBy: 'recents_desc',
         show: 24,
         lastViewed: [] as any[],
         maxDiscount: 15
@@ -49,7 +49,9 @@ export const useShopStore = defineStore('shop', {
     },
     actions: {
         async init(payload: { categorySlug: string | null; options: IListOptions; filters: IFilterValues }) {
+            this.options.sort = payload.options.sort || 'recents_desc'
             this.options.page = 1
+            this.orderBy = this.options.sort
             this.categorySlug = payload.categorySlug
             this.filters = payload.filters
             await this.fetchMaxDiscount()
@@ -71,14 +73,14 @@ export const useShopStore = defineStore('shop', {
                 const mobileMenu = await shopApi.getChildren(this.categoryList, 0)
                 this.rootCategoryList = mobileMenu
                 this.categoryListMobile = mobileMenu
-
-                const menuPCGamer = await shopApi.getChildren(this.categoryList, 42)
-                const pcMenu: any[] = [{ id: 1, name: 'Todos', categorySlug: 'pc-gamer', current: true }]
-                menuPCGamer.forEach((item: any, i: number) => {
-                    pcMenu.push({ id: i + 2, name: item.name, categorySlug: item.slug, current: false })
-                })
-                this.categoryPCGamer = pcMenu
             }
+
+            const menuPCGamer = shopApi.getChildren(this.categoryList, 42)
+            const pcMenu: any[] = [{ id: 1, name: 'Todos', categorySlug: 'pc-gamer', current: true }]
+            menuPCGamer.forEach((item: any, i: number) => {
+                pcMenu.push({ id: i + 2, name: item.name, categorySlug: item.slug, current: false })
+            })
+            this.categoryPCGamer = pcMenu
 
             // Sempre recalcular a partir do categoryList (cache ou fresco) — sem chamada de API
             this.categoryPromo = [
@@ -109,7 +111,7 @@ export const useShopStore = defineStore('shop', {
                 ? await shopApi.getCategoryBySlug(this.categoryList, payload.categorySlug)
                 : null
 
-            this.init = true
+            this.isInitialized = true
             this.categoryIsLoading = false
             this.category = category
         },
@@ -168,6 +170,15 @@ export const useShopStore = defineStore('shop', {
         },
         fetchPlaylist: () => shopApi.getPlayList(),
         fetchComments: () => shopApi.getComments(),
+        setLayout(layout: string) {
+            this.layout = layout
+        },
+        setOrderBy(orderBy: string) {
+            this.orderBy = orderBy
+        },
+        setShow(show: string | number) {
+            this.show = Number(show)
+        },
         fetchViewed(payload: any) {
             if (!this.lastViewed.find(x => x.id === payload.id)) {
                 this.lastViewed.unshift(payload)
@@ -177,6 +188,6 @@ export const useShopStore = defineStore('shop', {
     },
     persist: {
         storage: piniaPluginPersistedstate.localStorage,
-        pick: ['categoryList', 'brands', 'lastViewed', 'layout', 'orderBy', 'show']
+        pick: ['categoryList', 'brands', 'lastViewed']
     }
 })

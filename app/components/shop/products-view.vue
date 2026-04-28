@@ -45,17 +45,48 @@
                         <div class="layout-switcher">
                             <div class="layout-switcher__list">
                                 <button
-                                    v-for="viewMode in viewModes"
-                                    :key="viewMode.key"
-                                    :title="viewMode.title"
+                                    title="Grade"
                                     :class="[
                                         'layout-switcher__button',
-                                        {'layout-switcher__button--active': shopStore.layout === viewMode.key}
+                                        {'layout-switcher__button--active': isViewModeActive('grid')}
                                     ]"
                                     type="button"
-                                    @click="shopStore.setLayout(viewMode.key)"
+                                    @click="handleViewModeClick('grid')"
                                 >
-                                    <component :is="viewMode.icon" />
+                                    <LayoutGrid16x16Svg />
+                                </button>
+                                <button
+                                    title="Grade com 6 colunas"
+                                    :class="[
+                                        'layout-switcher__button',
+                                        {'layout-switcher__button--active': isViewModeActive('grid-6')}
+                                    ]"
+                                    type="button"
+                                    @click="handleViewModeClick('grid-6')"
+                                >
+                                    <LayoutGrid16x16Svg />
+                                </button>
+                                <button
+                                    title="Grade com Descrições"
+                                    :class="[
+                                        'layout-switcher__button',
+                                        {'layout-switcher__button--active': isViewModeActive('grid-with-features')}
+                                    ]"
+                                    type="button"
+                                    @click="handleViewModeClick('grid-with-features')"
+                                >
+                                    <LayoutGridWithDetails16x16Svg />
+                                </button>
+                                <button
+                                    title="Lista"
+                                    :class="[
+                                        'layout-switcher__button',
+                                        {'layout-switcher__button--active': isViewModeActive('list')}
+                                    ]"
+                                    type="button"
+                                    @click="handleViewModeClick('list')"
+                                >
+                                    <LayoutList16x16Svg />
                                 </button>
                             </div>
                         </div>
@@ -70,7 +101,7 @@
                             <select
                                 id="view-options-sort"
                                 class="form-control form-control-sm"
-                                :value="shopStore.orderBy"
+                                :value="isMounted ? shopStore.orderBy : (options.sort || shopStore.orderBy)"
                                 @change="handleSortChange"
                             >
                                 <option value="recents_desc">
@@ -91,7 +122,7 @@
                             <select
                                 id="view-options-limit"
                                 class="form-control form-control-sm"
-                                :value="shopStore.show"
+                                :value="currentShow"
                                 @change="handleLimitChange"
                             >
                                 <option value="6">
@@ -114,8 +145,8 @@
 
             <div
                 class="products-view__list products-list"
-                :data-layout="shopStore.layout !== 'list' ? grid : shopStore.layout"
-                :data-with-features="shopStore.layout === 'grid-with-features' ? 'true' : 'false'"
+                :data-layout="currentLayout !== 'list' ? currentGrid : currentLayout"
+                :data-with-features="currentLayout === 'grid-with-features' ? 'true' : 'false'"
                 :data-mobile-grid-columns="2"
             >
                 <div class="products-list__body">
@@ -138,8 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { Component } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { IProductsList } from '~/interfaces/product'
 import type { IFilterValues, IListOptions } from '~/interfaces/list'
 import Filters16Svg from '~/svg/filters-16.svg'
@@ -149,16 +179,13 @@ import LayoutList16x16Svg from '~/svg/layout-list-16x16.svg'
 import { useShopStore } from '~/stores/shop'
 
 export type ProductsViewLayout = 'grid' | 'grid-with-features' | 'list';
-export type ProductsViewGrid = 'grid-3-sidebar' | 'grid-4-full' | 'grid-5-full';
+export type ProductsViewGrid = 'grid-3-sidebar' | 'grid-4-full' | 'grid-5-full' | 'grid-6-full';
 export type ProductsViewOffcanvas = 'always' | 'mobile';
+type ViewModeKey = 'grid' | 'grid-6' | 'grid-with-features' | 'list';
+const GRID_STORAGE_KEY = 'shop-products-grid'
+const AVAILABLE_GRIDS: ProductsViewGrid[] = ['grid-3-sidebar', 'grid-4-full', 'grid-5-full', 'grid-6-full']
 
-interface ViewMode {
-    key: ProductsViewLayout
-    title: string
-    icon: Component
-}
-
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
     layout?: ProductsViewLayout
     grid?: ProductsViewGrid
     offcanvas?: ProductsViewOffcanvas
@@ -171,19 +198,36 @@ withDefaults(defineProps<{
 const emit = defineEmits<{ openSidebar: [] }>()
 
 const shopStore = useShopStore()
+const isMounted = ref(false)
+const selectedGrid = ref<ProductsViewGrid>(props.grid)
 
 const productsList = computed<IProductsList>(() => shopStore.productsList)
 const options = computed<IListOptions>(() => shopStore.options)
 const filters = computed<IFilterValues>(() => shopStore.filters)
+const initialLayout = computed<ProductsViewLayout>(() => props.layout || 'grid')
+const currentLayout = computed<ProductsViewLayout>(() => isMounted.value ? shopStore.layout : initialLayout.value)
+const currentShow = computed<number>(() => {
+    const limit = Number(options.value.limit)
+    if (!isMounted.value) {
+        return Number.isFinite(limit) && limit > 0 ? limit : 24
+    }
 
-const viewModes: ViewMode[] = [
-    { key: 'grid', title: 'Grade', icon: LayoutGrid16x16Svg },
-    { key: 'grid-with-features', title: 'Grade com Descrições', icon: LayoutGridWithDetails16x16Svg },
-    { key: 'list', title: 'Lista', icon: LayoutList16x16Svg }
-]
+    return shopStore.show
+})
+const currentGrid = computed<ProductsViewGrid>(() => selectedGrid.value)
 
 const filtersCount = computed(() => {
     return Object.keys(filters.value).map(x => filters.value[x]).filter(x => x).length
+})
+
+onMounted(() => {
+    const storedGrid = window.localStorage.getItem(GRID_STORAGE_KEY)
+
+    if (storedGrid && isProductsViewGrid(storedGrid)) {
+        selectedGrid.value = storedGrid
+    }
+
+    isMounted.value = true
 })
 
 function handlePageChange (page: number) {
@@ -193,6 +237,38 @@ function handlePageChange (page: number) {
     } catch {
         window.scrollTo(0, 0)
     }
+}
+
+function isViewModeActive(viewMode: ViewModeKey) {
+    if (viewMode === 'grid-6') {
+        return currentLayout.value === 'grid' && currentGrid.value === 'grid-6-full'
+    }
+
+    if (viewMode === 'grid') {
+        return currentLayout.value === 'grid' && currentGrid.value !== 'grid-6-full'
+    }
+
+    return currentLayout.value === viewMode
+}
+
+function handleViewModeClick(viewMode: ViewModeKey) {
+    if (viewMode === 'grid-6') {
+        shopStore.setLayout('grid')
+        selectedGrid.value = 'grid-6-full'
+        window.localStorage.setItem(GRID_STORAGE_KEY, 'grid-6-full')
+        return
+    }
+
+    if (viewMode === 'grid') {
+        selectedGrid.value = props.grid
+        window.localStorage.setItem(GRID_STORAGE_KEY, props.grid)
+    }
+
+    shopStore.setLayout(viewMode)
+}
+
+function isProductsViewGrid(value: string): value is ProductsViewGrid {
+    return AVAILABLE_GRIDS.includes(value as ProductsViewGrid)
 }
 
 function handleSortChange (event: Event) {
