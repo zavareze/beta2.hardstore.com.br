@@ -4,6 +4,11 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 
 ## Setup
 
+This project runs on the Node version declared in `.nvmrc`.
+The npm scripts automatically prepend `/root/.nvm/versions/node/v$(cat .nvmrc)/bin`
+to `PATH`, so commands keep using the right runtime even when the login shell
+defaults to an older Node.
+
 Make sure to install dependencies:
 
 ```bash

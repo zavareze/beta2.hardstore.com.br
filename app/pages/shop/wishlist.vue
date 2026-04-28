@@ -92,7 +92,7 @@
                                 <td class="wishlist__column wishlist__column--remove">
                                     <AsyncAction
                                         v-slot:default="{ run, isLoading }"
-                                        :action="() => wishlistStore.remove({ productId: item.id })"
+                                        :action="() => wishlistStore.remove(item.id)"
                                     >
                                         <button
                                             type="button"
@@ -127,5 +127,5 @@ const { price } = usePrice()
 
 useHead({ title: 'Wish List' })
 
-const items = computed(() => wishlistStore.items)
+const items = computed(() => wishlistStore.validItems)
 </script>

@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import type { IProduct } from '~/interfaces/product'
 import { useShopStore } from '~/stores/shop'
 
@@ -35,6 +35,12 @@ const internalTabs = ref<WithCurrent<any>[]>(props.tabs.map(tab => ({ ...tab, cu
 let cancelFn = () => {}
 
 onMounted(() => {
+    // Watch instalado após hidratação para não causar mismatch SSR
+    watch(() => props.tabs, (newTabs) => {
+        const currentId = internalTabs.value.find((t: any) => t.current)?.id
+        internalTabs.value = newTabs.map(tab => ({ ...tab, current: tab.id === currentId }))
+    }, { deep: true })
+
     if (internalTabs.value.length > 0) {
         const firstTab = internalTabs.value[0]
         if (isLoading.value) {

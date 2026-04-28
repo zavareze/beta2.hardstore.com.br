@@ -63,7 +63,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { useShopStore } from '~/stores/shop'
 import FiFreeDelivery48Svg from '~/svg/fi-free-delivery-48.svg'
 import Fi24Hours48Svg from '~/svg/fi-24-hours-48.svg'
@@ -80,9 +79,8 @@ withDefaults(defineProps<{
 
 const shopStore = useShopStore()
 
-await useAsyncData('maxDiscount', () => shopStore.fetchMaxDiscount())
-
-onMounted(() => {
-    shopStore.fetchMaxDiscount()
+await useAsyncData('maxDiscount', async () => {
+    await shopStore.fetchMaxDiscount()
+    return shopStore.maxDiscount
 })
 </script>

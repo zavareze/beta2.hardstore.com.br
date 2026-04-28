@@ -26,9 +26,47 @@ export type GetSuggestionsOptions = {
     category?: string;
 };
 
+function emptyVideoListResponse() {
+    return {
+        statusCode: 200,
+        status: 'success',
+        message: '',
+        data: {
+            videos: [] as any[],
+            tags: [] as any[]
+        }
+    }
+}
+
+function emptyProductsResponse() {
+    return [] as IProduct[]
+}
+
+function logStorefrontError(error: any, extra: Record<string, unknown>) {
+    if (process.server) {
+        console.error('[shopApi] storefront request failed', {
+            ...extra,
+            message: error?.message || 'Unknown request error'
+        })
+    }
+}
+
+function fetchStorefront<T>(query: Record<string, string | number | undefined>, fallbackFactory: () => T): Promise<T> {
+    return $fetch<T>('/api/storefront', { query }).catch((error) => {
+        logStorefrontError(error, {
+            resource: query.resource,
+            collection: query.collection,
+            category: query.category,
+            limit: query.limit
+        })
+
+        return fallbackFactory()
+    })
+}
+
 const shopApi = {
     getVideoList: () => {
-        return fetch('https://api.hardstore.com.br/api/videos').then(response => response.json())
+        return fetchStorefront({ resource: 'videos' }, emptyVideoListResponse)
     },
     getVideoPlaylist: (payload) => {
         if (!payload.playlist)
@@ -41,7 +79,7 @@ const shopApi = {
         return fetch('https://api.hardstore.com.br/api/videos?'+JSON.stringify(payload)).then(response => response.json())
     },
     getMaxDiscount: () => {
-        return fetch('https://api.hardstore.com.br/servless/config.json').then(response => response.json())
+        return fetchStorefront({ resource: 'config' }, () => ({ maxDiscount: 15 }))
     },
     getPlayList: () => {
         return fetch('https://api.hardstore.com.br/servless/playlist.json').then(response => response.json())
@@ -50,7 +88,7 @@ const shopApi = {
         return fetch('https://api.hardstore.com.br/servless/comments.json').then(response => response.json())
     },
     getCategoryList: () => {
-        return fetch('https://api.hardstore.com.br/servless/categorias.json').then(response => response.json())
+        return fetchStorefront({ resource: 'categories' }, () => [])
     },
     getBrandList: () => {
         return fetch('https://api.hardstore.com.br/servless/fabricantes.json').then(response => response.json())
@@ -123,24 +161,44 @@ const shopApi = {
         return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => x.items))
     },
     getPopularProducts: (options: any = {}): Promise<IProduct[]> => {
-        const params = { ...options }
-        return fetch(`https://api.hardstore.com.br/api/produtos/bestsellers?${JSON.stringify(params)}`).then(r => r.json())
+        return fetchStorefront({
+            resource: 'products',
+            collection: 'popular',
+            limit: options.limit,
+            category: options.category
+        }, emptyProductsResponse)
     },
     getLatestProducts: (options: any): Promise<IProduct[]> => {
-        const params = { ...options }
-        return fetch(`https://api.hardstore.com.br/api/produtos/novidades?${JSON.stringify(params)}`).then(r => r.json())
+        return fetchStorefront({
+            resource: 'products',
+            collection: 'latest',
+            limit: options.limit,
+            category: options.category
+        }, emptyProductsResponse)
     },
     getFeaturedProducts: (options: any): Promise<IProduct[]> => {
-        const params = { ...options }
-        return fetch(`https://api.hardstore.com.br/api/produtos/destaques?${JSON.stringify(params)}`).then(r => r.json())
+        return fetchStorefront({
+            resource: 'products',
+            collection: 'featured',
+            limit: options.limit,
+            category: options.category
+        }, emptyProductsResponse)
     },
     getTopRatedProducts: (options: any): Promise<IProduct[]> => {
-        const params = { ...options }
-        return fetch(`https://api.hardstore.com.br/api/produtos/novidades?${JSON.stringify(params)}`).then(r => r.json())
+        return fetchStorefront({
+            resource: 'products',
+            collection: 'topRated',
+            limit: options.limit,
+            category: options.category
+        }, emptyProductsResponse)
     },
     getDiscountedProducts: (options: any): Promise<IProduct[]> => {
-        const params = { ...options }
-        return fetch(`https://api.hardstore.com.br/api/produtos/discount?${JSON.stringify(params)}`).then(r => r.json())
+        return fetchStorefront({
+            resource: 'products',
+            collection: 'discount',
+            limit: options.limit,
+            category: options.category
+        }, emptyProductsResponse)
     },
     checkAvaiability: (payload) => {
         return fetch(`https://api.hardstore.com.br/api/stock/${payload}`).then(r => r.json())

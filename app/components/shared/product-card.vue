@@ -74,7 +74,9 @@
                     {{ attribute }}
                 </li>
             </ul>
-            <div v-if="product.description" class="product-card__features-list" v-html="product.description+'...'"></div>
+            <div v-if="product.description" class="product-card__features-list">
+                {{ productDescriptionText }}
+            </div>
         </div>
         <div class="product-card__actions">
             <div class="product-card__availability">
@@ -174,6 +176,15 @@ const quickviewStore = useQuickviewStore()
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
 const compareStore = useCompareStore()
+
+const productDescriptionText = computed(() => {
+    const text = String(props.product.description || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+    return text ? `${text}...` : ''
+})
 
 const features = computed(() => {
     if (props.product.attributes)

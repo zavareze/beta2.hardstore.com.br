@@ -70,8 +70,8 @@ const breadcrumb = computed<ILink[]>(() => {
         { title: 'Home', url: url.home() },
         { title: 'Shop', url: url.catalog() }
     ]
-    const cat = Object.assign(props.product.tags_categoria)
-    cat.reverse().forEach((element: any) => {
+    const cat = [...(props.product.tags_categoria || [])].reverse()
+    cat.forEach((element: any) => {
         bread.push({ title: element.name, url: '/shop/' + element.slug })
     })
     bread.push({ title: props.product.name, url: url.product(props.product) })

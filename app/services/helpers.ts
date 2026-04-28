@@ -1,4 +1,4 @@
-import * as queryString from 'query-string'
+import queryString, { type ParsedQuery } from 'query-string'
 import type { ICategory } from '~/interfaces/category'
 import type { IFilterValues, IListOptions } from '~/interfaces/list'
 
@@ -14,7 +14,7 @@ export function isArrayOfStrings (value: any): value is string[] {
     return !value.map(x => typeof x !== 'string').includes(true)
 }
 
-export function parseQueryOptions (query: string | queryString.ParsedQuery) {
+export function parseQueryOptions (query: string | ParsedQuery) {
     const queryObject = typeof query === 'string' ? queryString.parse(query) : query
     const optionValues: IListOptions = {}
 
@@ -31,7 +31,7 @@ export function parseQueryOptions (query: string | queryString.ParsedQuery) {
     return optionValues
 }
 
-export function parseQueryFilters (query: string | queryString.ParsedQuery) {
+export function parseQueryFilters (query: string | ParsedQuery) {
     const queryObject = typeof query === 'string' ? queryString.parse(query) : query
     const filterValues: IFilterValues = {}
 

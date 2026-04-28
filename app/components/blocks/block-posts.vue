@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { SwiperOptions } from 'swiper'
+import type { SwiperOptions } from 'swiper/types'
 
 type BlockPostsLayout = 'list' | 'grid-3' | 'grid-4';
 type BlockPostsMobileGridColumns = 1 | 2;
@@ -29,7 +29,10 @@ const carouselOptionsBase: SwiperOptions = {
     autoplay: {
         delay: 5000
     },
-    pagination: {},
+    speed: 550,
+    pagination: {
+        clickable: true
+    },
     roundLengths: true
 }
 const carouselOptionsByLayout: Record<string, SwiperOptions> = {

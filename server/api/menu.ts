@@ -1,3 +1,5 @@
+import { fetchHardstoreJson } from '../utils/hardstore-upstream'
+
 export default defineEventHandler(async () => {
-    return await $fetch('https://api.hardstore.com.br/servless/menu.json')
+    return await fetchHardstoreJson('menu', '/servless/menu.json', () => [])
 })

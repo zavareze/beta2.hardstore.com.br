@@ -8,6 +8,31 @@
                 Carregando
             </button>
             <div v-if="!loading">
+                <div v-if="hasSavedAddresses" class="mb-4 text-start">
+                    <div class="fw-semibold mb-2">Usar endereço cadastrado</div>
+                    <div class="list-group">
+                        <button
+                            v-for="address in savedAddresses"
+                            :key="address.id"
+                            type="button"
+                            :class="[
+                                'list-group-item list-group-item-action',
+                                { active: selectedAddressId === String(address.id) }
+                            ]"
+                            @click="selectAddress(address)"
+                        >
+                            <div class="d-flex w-100 justify-content-between gap-3">
+                                <strong>{{ formatCep(address.cep) }}</strong>
+                                <span v-if="isDefaultAddress(address)" class="badge text-bg-light">Padrão</span>
+                            </div>
+                            <div class="small mt-1">
+                                {{ address.logradouro }}, {{ address.numero }}
+                                <template v-if="address.complemento"> - {{ address.complemento }}</template>
+                            </div>
+                            <div class="small">{{ address.bairro }} - {{ address.cidade }}/{{ address.uf }}</div>
+                        </button>
+                    </div>
+                </div>
                 <div class="site-header__search mb-3">
                     <div class="search search--location--header">
                         <div class="search__body">
@@ -38,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useAccountStore } from '~/stores/account'
 import { useCartStore } from '~/stores/cart'
 
@@ -59,8 +84,15 @@ const cartStore = useCartStore()
 const error = ref('')
 const cep = ref({ cep: accountStore.cep || '' })
 const loading = ref(false)
+const selectedAddressId = ref('')
 
-onMounted(() => {
+const savedAddresses = computed(() => accountStore.addresses.filter((address: any) => address?.cep))
+const hasSavedAddresses = computed(() => accountStore.logged && savedAddresses.value.length > 0)
+
+onMounted(async () => {
+    if (accountStore.logged && accountStore.token && accountStore.addresses.length === 0) {
+        await accountStore.getAddresses()
+    }
     calculaFrete()
 })
 
@@ -88,13 +120,11 @@ async function calculaFrete() {
             if (!result.data?.cep?.message) {
                 accountStore.setCEP(result.data.cep.cep)
                 emit('finish', result.data)
+                setShipping()
+                useModal().hide('modalShippingCart')
             } else {
-                if (result.data?.cep?.message)
-                    error.value = result.data.cep.message
-                else
-                    error.value = 'CEP Não localizado'
+                error.value = result.data?.cep?.message || 'CEP Não localizado'
             }
-            setShipping()
         } catch (result: any) {
             loading.value = false
             if (result.data?.cep?.message)
@@ -103,6 +133,24 @@ async function calculaFrete() {
                 error.value = 'CEP Não localizado'
         }
     }
+}
+
+function selectAddress(address: any) {
+    selectedAddressId.value = String(address.id)
+    accountStore.selectAddress(address.id)
+    cep.value.cep = formatCep(address.cep)
+    calculaFrete()
+}
+
+function formatCep(value: string | number) {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 8)
+    return digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
+}
+
+function isDefaultAddress(address: any) {
+    return address.default === true ||
+        String(address.default) === '1' ||
+        String(address.id) === String(accountStore.user.padrao || '')
 }
 
 function setShipping() {

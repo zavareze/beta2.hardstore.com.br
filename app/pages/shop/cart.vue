@@ -26,97 +26,106 @@
 
             <div v-if="cart.quantity" class="cart block">
                 <div class="container">
-                    <table class="cart__table cart-table">
-                        <thead class="cart-table__head">
-                            <tr class="cart-table__row">
-                                <th class="cart-table__column cart-table__column--image">
-                                    Imagem
-                                </th>
-                                <th class="cart-table__column cart-table__column--product">
-                                    Produto
-                                </th>
-                                <th class="cart-table__column cart-table__column--price">
-                                    Preço
-                                </th>
-                                <th class="cart-table__column cart-table__column--quantity">
-                                    Quantidade
-                                </th>
-                                <th class="cart-table__column cart-table__column--total">
-                                    Total
-                                </th>
-                                <th class="cart-table__column cart-table__column--remove" aria-label="Remove" />
-                            </tr>
-                        </thead>
-                        <tbody class="cart-table__body">
-                            <tr v-for="item in cart.items" :key="item.id" class="cart-table__row">
-                                <td class="cart-table__column cart-table__column--image">
-                                    <div class="product-image">
-                                        <AppLink :to="url.product(item.product)" class="product-image__body">
-                                            <!--suppress HtmlUnknownTarget -->
-                                            <img class="product-image__img" :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + item.product.id + '/1280x960/1.webp'" alt="">
+                    <div class="cart-table__wrapper">
+                        <table class="cart__table cart-table">
+                            <thead class="cart-table__head">
+                                <tr class="cart-table__row">
+                                    <th class="cart-table__column cart-table__column--image">
+                                        Imagem
+                                    </th>
+                                    <th class="cart-table__column cart-table__column--product">
+                                        Produto
+                                    </th>
+                                    <th class="cart-table__column cart-table__column--price">
+                                        Preço
+                                    </th>
+                                    <th class="cart-table__column cart-table__column--quantity">
+                                        Quantidade
+                                    </th>
+                                    <th class="cart-table__column cart-table__column--total">
+                                        Total
+                                    </th>
+                                    <th class="cart-table__column cart-table__column--remove" aria-label="Remove" />
+                                </tr>
+                            </thead>
+                            <tbody class="cart-table__body">
+                                <tr v-for="item in cart.items" :key="item.id" class="cart-table__row">
+                                    <td class="cart-table__column cart-table__column--image">
+                                        <div class="product-image">
+                                            <AppLink :to="url.product(item.product)" class="product-image__body">
+                                                <!--suppress HtmlUnknownTarget -->
+                                                <img class="product-image__img" :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + item.product.id + '/1280x960/1.webp'" alt="">
+                                            </AppLink>
+                                        </div>
+                                    </td>
+                                    <td class="cart-table__column cart-table__column--product">
+                                        <AppLink :to="url.product(item.product)" class="cart-table__product-name">
+                                            {{ item.product.name }}
                                         </AppLink>
-                                    </div>
-                                </td>
-                                <td class="cart-table__column cart-table__column--product">
-                                    <AppLink :to="url.product(item.product)" class="cart-table__product-name">
-                                        {{ item.product.name }}
-                                    </AppLink>
-                                    <ul v-if="item.options.length > 0" class="cart-table__options">
-                                        <li v-for="(option, index) in item.options" :key="index">
-                                            {{ option.optionTitle }}: {{ option.valueTitle }}
-                                        </li>
-                                    </ul>
-                                </td>
-                                <td class="cart-table__column cart-table__column--price" data-title="Valor">
-                                    {{ price(item.price) }}
-                                </td>
-                                <td class="cart-table__column cart-table__column--quantity" data-title="Quantidade">
-                                    <InputNumber
-                                        :value="getItemQuantity(item)"
-                                        :min="1"
-                                        :max="item.max"
-                                        @input="handleChangeQuantity(item, $event); updateQuantities();"
-                                        :error="item.error"
-                                    />
-                                </td>
-                                <td class="cart-table__column cart-table__column--total" data-title="Total">
-                                    {{ price(item.total) }}
-                                </td>
-                                <td class="cart-table__column cart-table__column--remove">
-                                    <AsyncAction
-                                        v-slot:default="{ run, isLoading }"
-                                        :action="() => remover(item)"
-                                    >
-                                        <button
-                                            type="button"
-                                            :class="[
-                                                'btn btn-light btn-sm btn-svg-icon',
-                                                {'btn-loading': isLoading}
-                                            ]"
-                                            @click="run"
+                                        <ul v-if="item.options.length > 0" class="cart-table__options">
+                                            <li v-for="(option, index) in item.options" :key="index">
+                                                {{ option.optionTitle }}: {{ option.valueTitle }}
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td class="cart-table__column cart-table__column--price" data-title="Valor">
+                                        {{ price(item.price) }}
+                                    </td>
+                                    <td class="cart-table__column cart-table__column--quantity" data-title="Quantidade">
+                                        <InputNumber
+                                            :modelValue="getItemQuantity(item)"
+                                            :min="1"
+                                            :max="item.max"
+                                            @update:modelValue="handleChangeQuantity(item, $event)"
+                                            :error="item.error"
+                                        />
+                                    </td>
+                                    <td class="cart-table__column cart-table__column--total" data-title="Total">
+                                        {{ price(item.total) }}
+                                    </td>
+                                    <td class="cart-table__column cart-table__column--remove">
+                                        <AsyncAction
+                                            v-slot:default="{ run, isLoading }"
+                                            :action="() => remover(item)"
                                         >
-                                            <Cross12Svg />
-                                        </button>
-                                    </AsyncAction>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                            <button
+                                                type="button"
+                                                :class="[
+                                                    'btn btn-light btn-sm btn-svg-icon',
+                                                    {'btn-loading': isLoading}
+                                                ]"
+                                                @click="run"
+                                            >
+                                                <Trash16Svg />
+                                            </button>
+                                        </AsyncAction>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div v-if="isUpdatingQuantities" class="cart-table__loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Atualizando...</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="cart__actions">
                         <form class="cart__coupon-form">
-                            <label for="input-coupon-code" class="sr-only">Cupom</label>
-                            <input
-                                id="input-coupon-code"
-                                class="form-control"
-                                type="text"
-                                placeholder="Código Promocional"
-                            >
+                            <div class="form-floating">
+                                <input
+                                    id="input-coupon-code"
+                                    class="form-control"
+                                    type="text"
+                                    placeholder="Código Promocional"
+                                >
+                                <label for="input-coupon-code">Código Promocional</label>
+                            </div>
                             <button type="submit" class="btn btn-primary">
                                 Aplicar Promoção
                             </button>
                         </form>
                         <div class="cart__buttons">
-                            <AppLink href="/" class="btn btn-light">
+                            <AppLink to="/" class="btn btn-light">
                                 Continuar Comprando
                             </AppLink>
                             <AsyncAction
@@ -144,6 +153,12 @@
                                 <div class="card-body">
                                     <h3 class="card-title">
                                         Frete e Prazo
+                                        <span v-if="account.cep" class="float-end fs-6 fw-normal">
+                                            CEP {{ account.cep }}
+                                            <a href="#" @click.prevent="useModal().show('modalShippingCart')">
+                                                (alterar)
+                                            </a>
+                                        </span>
                                     </h3>
                                     <div class="pt-4 pb-4">
                                         <table class="table">
@@ -270,12 +285,11 @@
                     </div>
                 </div>
             </div>
-            <modal-shipping
+            <modal-shipping-cart
                 :weight="cartStore.weight"
                 :price="cart.subtotal"
                 :stock="stock()"
                 :local="1"
-                :multiple="cartStore.multiple"
                 @finish="setCEP($event)"
             />
         </client-only>
@@ -285,6 +299,7 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { useAccountStore } from '~/stores/account'
+import Trash16Svg from '~/svg/trash-16.svg'
 
 const cartStore = useCartStore()
 const account = useAccountStore()
@@ -303,8 +318,12 @@ export interface Quantity {
 const quantities = ref<Quantity[]>([])
 const shipping = ref(cartStore.shippingMethod || 1)
 const cep = ref({ sedex: { valor: 0 }, pac: { valor: 0 }, motoboy: { valor: 0 } })
+const isUpdatingQuantities = ref(false)
+let updateTimer: ReturnType<typeof setTimeout> | null = null
 
-onMounted(() => {
+onMounted(async () => {
+    await validateCartQuantities()
+
     if (account.cep === '')
         setTimeout(() => {
             useModal().show('modalShippingCart')
@@ -315,6 +334,12 @@ onMounted(() => {
         }, 100))
     }
 })
+
+async function validateCartQuantities () {
+    if (!cartStore.items.length) return
+    await updateQuantities(false)
+    quantities.value = []
+}
 
 function setCEP (evt) {
     cep.value = evt
@@ -338,10 +363,7 @@ function calculaFrete () {
             cart: true,
             loja,
             object: 'cart'
-        }).then((result) => {
-            if (!result.data.cep?.message) {
-                account.setCEP(result.data.cep.cep)
-            }
+        }).then(() => {
             setShipping(false)
         })
     }
@@ -369,7 +391,6 @@ function filiais () {
     for (let i=0;i<cartStore.items.length;i++) {
         fil[cartStore.items[i].local] = 1
     }
-    console.log('filiais', fil);
     return fil.length
 }
 
@@ -399,23 +420,31 @@ function handleChangeQuantity (item: any, quantity: number) {
             value: quantity
         })
     }
+    if (updateTimer) clearTimeout(updateTimer)
+    updateTimer = setTimeout(() => updateQuantities(true), 800)
 }
 
 function getItemQuantity (item: any) {
-    return item.quantity
+    const q = quantities.value.find(x => x.itemId === item.id)
+    return q !== undefined ? q.value : item.quantity
 }
 
 async function remover (item) {
-    await cartStore.remove({ itemId: item.id })
+    await cartStore.remove(item.id)
     calculaFrete()
 }
 
-async function updateQuantities () {
-    await cartStore.updateQuantities(quantities.value.map(x => ({
-        ...x,
-        value: typeof x.value === 'string' ? parseFloat(x.value) : x.value
-    })))
-    calculaFrete()
+async function updateQuantities (showLoading = true) {
+    if (showLoading) isUpdatingQuantities.value = true
+    try {
+        await cartStore.updateQuantities(quantities.value.map(x => ({
+            ...x,
+            value: typeof x.value === 'string' ? parseFloat(x.value) : x.value
+        })))
+        calculaFrete()
+    } finally {
+        if (showLoading) isUpdatingQuantities.value = false
+    }
 }
 
 function cartNeedUpdate () {

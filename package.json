@@ -6,11 +6,11 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev --host",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "build": "./scripts/use-node-version.sh nuxt build",
+    "dev": "./scripts/use-node-version.sh nuxt dev --host",
+    "generate": "./scripts/use-node-version.sh nuxt generate",
+    "preview": "./scripts/use-node-version.sh nuxt preview",
+    "postinstall": "./scripts/use-node-version.sh nuxt prepare"
   },
   "overrides": {
     "glob": "^13.0.0"

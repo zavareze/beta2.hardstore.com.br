@@ -4,11 +4,11 @@
             <AppLink :to="data.url" class="block-banner__body">
                 <div
                     class="block-banner__image block-banner__image--desktop" style="z-index: 0;"
-                    :lazy-background="data.img"
+                    :style="{ backgroundImage: getBackgroundImage(data.img) }"
                 />
                 <div
                     class="block-banner__image block-banner__image--mobile"
-                    :lazy-background="data.mobile"
+                    :style="{ backgroundImage: getBackgroundImage(data.mobile || data.img) }"
                 />
                 <div class="block-banner__title text-white">
 
@@ -27,7 +27,13 @@
 </template>
 
 <script setup lang="ts">
+const url = useUrl()
+
 defineProps<{
     data: any
 }>()
+
+function getBackgroundImage(imagePath?: string) {
+    return imagePath ? `url(${url.img(imagePath)})` : 'none'
+}
 </script>

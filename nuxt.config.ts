@@ -55,6 +55,7 @@ export default defineNuxtConfig({
 
     modules: [
         '@pinia/nuxt',
+        'pinia-plugin-persistedstate/nuxt',
         // '@nuxtjs/gtm' — install when nuxt3 version is confirmed
     ],
 

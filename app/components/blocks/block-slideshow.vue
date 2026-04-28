@@ -19,11 +19,18 @@
                 >
                     <div class="block-slideshow__body">
                         <Carousel :options="{
-    autoplay: {
-        delay: 5000
-    },
-    roundLengths: true
-}">
+                            autoplay: {
+                                delay: 5000,
+                                disableOnInteraction: false,
+                                pauseOnMouseEnter: true
+                            },
+                            loop: slides.length > 1,
+                            pagination: {
+                                clickable: true
+                            },
+                            speed: 650,
+                            roundLengths: true
+                        }">
                             <CarouselSlide v-for="(slide, index) in slides" :key="index">
                                 <AppLink class="block-slideshow__slide" :to="slide.url">
                                     <div
@@ -95,7 +102,7 @@ const slides: Slide[] = [
         imageClassic: '/images/banners/banner-promo-roku.png',
         imageFull: '/images/banners/banner-promo-roku.png',
         imageMobile: '',
-        url: '/shop?filter_search=roku'
+        url: `${url.catalog()}?filter_search=roku`
     },
     {
         title: ' ',
@@ -103,7 +110,7 @@ const slides: Slide[] = [
         imageClassic: '/images/banners/baly.png',
         imageFull: '/images/banners/baly.png',
         imageMobile: '',
-        url: '/shop?filter_search=redragon'
+        url: `${url.catalog()}?filter_search=redragon`
     },
     {
         title: ' ',
@@ -111,7 +118,7 @@ const slides: Slide[] = [
         imageClassic: '/images/banners/manu.jpeg',
         imageFull: '/images/banners/manu.jpeg',
         imageMobile: '',
-        url: '/shop/'
+        url: url.catalog()
     },
 ]
 
@@ -131,6 +138,6 @@ function getDesktopImage(slide: Slide): string {
 }
 
 function getMobileImage(slide: Slide): string {
-    return `url(${url.img(slide.imageMobile)})`
+    return `url(${url.img(slide.imageMobile || (props.layout === 'with-departments' ? slide.imageClassic : slide.imageFull))})`
 }
 </script>

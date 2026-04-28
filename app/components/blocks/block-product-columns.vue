@@ -6,7 +6,7 @@
                     <BlockHeader :title="column.title" />
 
                     <div class="block-product-columns__column">
-                        <div v-for="product in column.products" :key="product.id" class="block-product-columns__item">
+                        <div v-for="product in column.products.slice(0, 3)" :key="product.id" class="block-product-columns__item">
                             <ProductCard :product="product" layout="horizontal" />
                         </div>
                     </div>

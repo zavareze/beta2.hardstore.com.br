@@ -8,14 +8,16 @@
         </div>
 
         <form class="footer-newsletter__form">
-            <label class="sr-only" for="footer-newsletter-address">Seu e-mail</label>
-            <input
-                id="footer-newsletter-address"
-                class="footer-newsletter__form-input form-control"
-                type="text"
-                placeholder="Seu e-mail..."
-                v-model="email"
-            >
+            <div class="form-floating footer-newsletter__form-floating">
+                <input
+                    id="footer-newsletter-address"
+                    class="footer-newsletter__form-input form-control"
+                    type="email"
+                    placeholder="Seu e-mail..."
+                    v-model="email"
+                >
+                <label for="footer-newsletter-address">Seu e-mail</label>
+            </div>
 
             <button class="footer-newsletter__form-button btn btn-primary" @click.prevent="addNewsletter()">
                 Assinar

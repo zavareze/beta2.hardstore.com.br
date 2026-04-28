@@ -33,8 +33,9 @@
                     />
                 </template>
                 <template v-slot:textoSeo>
-                    <div class="categoria-seo" v-html="textoSeo">
-                    </div>
+                    <ClientOnly>
+                        <div v-if="textoSeo" class="categoria-seo" v-html="textoSeo" />
+                    </ClientOnly>
                 </template>
             </CategoryLayout>
         </template>
@@ -43,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import * as qs from 'query-string'
+import qs from 'query-string'
 import type { IProduct } from '~/interfaces/product'
 import type { ILink } from '~/interfaces/menus/link'
 import type { ICategory } from '~/interfaces/category'

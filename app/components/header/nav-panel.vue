@@ -61,6 +61,7 @@
                         :to="url.cart()"
                         :value="cartValue"
                         trigger="click"
+                        :close-delay-on-mouse-leave="500"
                         @buttonClick="onCartClick"
                     >
                         <template v-slot:icon>
@@ -70,7 +71,12 @@
                         <Dropcart v-if="optionsStore.dropcartType === 'dropdown'" />
                     </Indicator>
 
-                    <Indicator ref="accountIndicatorRef" :to="url.accountDashboard()" trigger="click">
+                    <Indicator
+                        ref="accountIndicatorRef"
+                        :to="url.accountDashboard()"
+                        trigger="click"
+                        :close-delay-on-mouse-leave="500"
+                    >
                         <template v-slot:icon>
                             <Person20Svg />
                         </template>

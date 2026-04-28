@@ -93,7 +93,7 @@
                         </p>
                         <p style="margin-bottom: 0px;">ou em 3X com 10% OFF no cartão</p>
                     </span>
-                    <p style="cursor: pointer; font-size: medium;color: #cc3333;font-weight: 500;" @click="paymentOptionsStore.open({ price: product.price })">
+                    <p style="cursor: pointer; font-size: medium;color: #cc3333;font-weight: 500;" @click="paymentOptionsStore.openModal(product.price)">
                         Ver os meios de pagamento
                     </p>
                 </div>
@@ -171,12 +171,15 @@
                             <div class="product__actions-item">
                                 <InputNumber
                                     id="product-quantity"
-                                    v-model="quantity"
+                                    :modelValue="quantity"
                                     aria-label="Quantity"
                                     class="product__quantity"
                                     size="lg"
                                     :disabled="(product.stock+product.stock_caxias == 0 && product.status == 3)"
                                     :min="1"
+                                    :max="maxQuantity"
+                                    :error="stockError"
+                                    @update:modelValue="handleQuantityChange"
                                 />
                             </div>
                             <div class="product__actions-item product__actions-item--addtocart">
@@ -272,6 +275,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { IProduct } from '~/interfaces/product'
+import shopApi from '~/api/shop'
 import { useCartStore } from '~/stores/cart'
 import { useWishlistStore } from '~/stores/wishlist'
 import { useCompareStore } from '~/stores/compare'
@@ -297,9 +301,11 @@ const paymentOptionsStore = usePaymentOptionsStore()
 const quantity = ref<number | string>(1)
 const local = ref<number>(1)
 const cep = ref<any>({ cep: accountStore.cep, estimativa: '', error: '', fretes: {} })
+const maxQuantity = ref<number | undefined>(undefined)
+const stockError = ref('')
 const { show: showModal } = useModal()
 
-onMounted(() => {
+onMounted(async () => {
     if (props.product.status === 3) {
         if (props.product.stock_caxias) {
             local.value = 2
@@ -308,7 +314,23 @@ onMounted(() => {
             local.value = 1
         }
     }
+    try {
+        const result = await shopApi.checkAvaiability(props.product.id)
+        if (result?.data?.length > 0) {
+            maxQuantity.value = result.data[0].stock
+        }
+    } catch {}
 })
+
+function handleQuantityChange(val: number | string) {
+    quantity.value = val
+    if (maxQuantity.value !== undefined && Number(val) > maxQuantity.value) {
+        stockError.value = `Disponível: ${maxQuantity.value}`
+        quantity.value = maxQuantity.value
+    } else {
+        stockError.value = ''
+    }
+}
 
 function setLocal(i: number) {
     local.value = i
@@ -329,6 +351,9 @@ function addToCart(): Promise<void> {
     if (typeof quantity.value === 'string' || quantity.value < 1) {
         return Promise.resolve()
     }
-    return cartStore.add({ product: props.product, quantity: quantity.value, local: local.value })
+    const qty = maxQuantity.value !== undefined
+        ? Math.min(Number(quantity.value), maxQuantity.value)
+        : Number(quantity.value)
+    return cartStore.add({ product: props.product, quantity: qty, local: local.value })
 }
 </script>

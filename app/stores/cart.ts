@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import type { IProduct } from '~/interfaces/product'
 import type { Cart, CartItem, CartItemOption, CartTotal } from '~/interfaces/cart'
 import shopApi from '~/api/shop'
@@ -20,7 +21,7 @@ export type CartAddPayload = {
 
 export type CartRemovePayload = { itemId: number }
 
-export type CartItemQuantity = { itemId: number; value: number; error: string }
+export type CartItemQuantity = { itemId: number; value: number; error?: string }
 export type CartUpdateQuantitiesPayload = CartItemQuantity[]
 
 function findItemIndex(items: CartItem[], product: IProduct, options: CartItemOption[]): number {
@@ -112,7 +113,7 @@ export const useCartStore = defineStore('cart', {
                 } as any)
             } else {
                 const item = this.items[itemIndex] as any
-                item.quantity = quantity
+                item.quantity += quantity
                 item.total = item.price * item.quantity
             }
 
@@ -136,6 +137,8 @@ export const useCartStore = defineStore('cart', {
             this.total = this.subtotal + this.shipping
         },
         async updateQuantities(payload: CartUpdateQuantitiesPayload) {
+            if (this.items.length === 0) return
+
             const products = this.items.reduce((acc, i) => acc + i.product.id + '-', '').slice(0, -1)
             const result = await shopApi.checkAvaiability(products)
 
@@ -151,6 +154,8 @@ export const useCartStore = defineStore('cart', {
                         } else {
                             payload.push({ itemId: located.id, error: 'Disponível ' + item.stock, value: item.stock })
                         }
+                    } else if (!ppp) {
+                        payload.push({ itemId: located.id, value: located.quantity })
                     }
                 }
             })
@@ -160,7 +165,11 @@ export const useCartStore = defineStore('cart', {
                 if (!quantity) return
                 item.quantity = quantity.value
                 ;(item as any).error = quantity.error
-                if ((item as any).error) (item as any).max = quantity.value
+                if ((item as any).error) {
+                    ;(item as any).max = quantity.value
+                } else {
+                    delete (item as any).max
+                }
                 item.total = item.price * item.quantity
                 if (!(item.product as any).stock) this.stock = false
             })
@@ -174,5 +183,7 @@ export const useCartStore = defineStore('cart', {
             this.consent = true
         }
     },
-    persist: true
+    persist: {
+        storage: piniaPluginPersistedstate.localStorage
+    }
 })

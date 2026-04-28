@@ -9,14 +9,13 @@
             :tabs="shop.categoryPromo"
             :initial-data="featuredProductsPromo"
             :data-source="featuredProductsSource"
-            action="shop/fetchCategoryPromo"
         >
             <BlockProductsCarousel
                 title="Ofertas Especiais"
                 layout="grid-4"
                 :products="products"
                 :loading="isLoading"
-                :groups="shop.categoryPromo"
+                :groups="tabs"
                 @groupClick="handleTabChange"
             />
         </BlockProductsCarouselContainer>
@@ -28,14 +27,13 @@
             :tabs="shop.categoryPCGamer"
             :initial-data="featuredProductsPCGamer"
             :data-source="featuredProductsSource"
-            action="shop/fetchCategoryPCGamer"
         >
             <BlockProductsCarousel
                 title="Computador Gamer"
                 layout="grid-4"
                 :products="products"
                 :loading="isLoading"
-                :groups="shop.categoryPCGamer"
+                :groups="tabs"
                 @groupClick="handleTabChange"
             />
         </BlockProductsCarouselContainer>
@@ -46,14 +44,13 @@
             :tabs="shop.categoryNotebooksComputers"
             :initial-data="featuredProductsNotebooks"
             :data-source="featuredProductsSource"
-            action="shop/fetchCategoryNotebooksComputers"
         >
             <BlockProductsCarousel
                 title="Notebooks / Computadores"
                 layout="grid-4"
                 :products="products"
                 :loading="isLoading"
-                :groups="shop.categoryNotebooksComputers"
+                :groups="tabs"
                 @groupClick="handleTabChange"
             />
         </BlockProductsCarouselContainer>
@@ -65,14 +62,13 @@
             :tabs="shop.categoryDestaques"
             :initial-data="featuredProductsComputadores"
             :data-source="featuredProductsSource"
-            action="shop/fetchCategoryDestaques"
         >
             <BlockProductsCarousel
                 title="Produtos em Destaque"
                 layout="grid-4"
                 :products="products"
                 :loading="isLoading"
-                :groups="shop.categoryDestaques"
+                :groups="tabs"
                 @groupClick="handleTabChange"
             />
         </BlockProductsCarouselContainer>
@@ -118,7 +114,7 @@
         <BlockPosts
             title="Hardstore TV News"
             layout="list"
-            :posts="shop.videos.videos"
+            :posts="videoPosts"
         />
 
         <BlockBrands />
@@ -144,13 +140,22 @@ async function loadColumns () {
     const specialOffers = shopApi.getDiscountedProducts({ limit: 3 })
     const bestsellers = shopApi.getPopularProducts({ limit: 3 })
     return [
-        { title: 'Melhores Avaliações', products: await topRated },
-        { title: 'Ofertas Especiais', products: await specialOffers },
+        { title: 'Melhores Avaliações', products: (await topRated).slice(0, 3) },
+        { title: 'Ofertas Especiais', products: (await specialOffers).slice(0, 3) },
         { title: 'Mais Vendidos', products: (await bestsellers).slice(0, 3) }
     ]
 }
 
 useHead({ title: '' })
+
+await useAsyncData('homeCategories', async () => {
+    await shop.fetchCategory({ categorySlug: null })
+    return true
+})
+
+const { data: homeVideos } = await useAsyncData('homeVideos', () =>
+    shopApi.getVideoList()
+)
 
 const { data: featuredProducts } = await useAsyncData('featuredProducts', () =>
     shopApi.getFeaturedProducts({ limit: 8 })
@@ -175,8 +180,13 @@ const { data: latestProducts } = await useAsyncData('latestProducts', () =>
 )
 const { data: columns } = await useAsyncData('columns', () => loadColumns())
 
+const videoPosts = computed(() => {
+    return Array.isArray(homeVideos.value?.data?.videos)
+        ? homeVideos.value.data.videos
+        : []
+})
+
 onMounted(() => {
-    shop.fetchYoutube()
     if (!bestsellers.value) {
         shopApi.getPopularProducts().then((products) => {
             bestsellers.value = products

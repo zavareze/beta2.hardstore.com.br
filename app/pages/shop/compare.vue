@@ -34,7 +34,7 @@
                                     <td v-for="product in items" :key="product.id">
                                         <AsyncAction
                                             v-slot:default="{ run, isLoading }"
-                                            :action="() => compareStore.remove({ productId: product.id })"
+                                            :action="() => compareStore.remove(product.id)"
                                         >
                                             <button
                                                 type="button"
@@ -133,7 +133,7 @@
                                     <td v-for="product in items" :key="product.id">
                                         <AsyncAction
                                             v-slot:default="{ run, isLoading }"
-                                            :action="() => compareStore.remove({ productId: product.id })"
+                                            :action="() => compareStore.remove(product.id)"
                                         >
                                             <button
                                                 type="button"
@@ -168,7 +168,7 @@ const { price } = usePrice()
 
 useHead({ title: 'Comparar Produtos ' })
 
-const items = computed(() => compareStore.items)
+const items = computed(() => compareStore.validItems)
 
 export type Attributes = Array<{
     name: string;

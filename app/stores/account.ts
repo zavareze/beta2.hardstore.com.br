@@ -251,6 +251,10 @@ export const useAccountStore = defineStore('account', {
         buscaCEP(payload: any) {
             return accountApi.buscaCEP(payload)
         },
+        setCEP(cepValue: string | number) {
+            const cepStr = Array(9 - cepValue.toString().length).join('0') + cepValue.toString()
+            this.cep = cepStr
+        },
         async calculaFrete(payload: any) {
             const result: any = await accountApi.calculaFrete(payload)
             if (payload.cart) {

@@ -30,12 +30,43 @@
                                         <h3 class="card-title">
                                             Selecione seu Endereço
                                         </h3>
+                                        <div v-if="selectedAddress.id" class="alert alert-success border-success mb-4">
+                                            <div class="d-flex flex-column gap-3">
+                                                <div>
+                                                    <div class="fw-semibold mb-2">
+                                                        Endereço de entrega selecionado
+                                                    </div>
+                                                    <div>
+                                                        <strong>CEP:</strong> {{ selectedAddress.cep }}
+                                                    </div>
+                                                    <div>
+                                                        {{ selectedAddress.logradouro }}, {{ selectedAddress.numero }}
+                                                        <template v-if="selectedAddress.complemento">, {{ selectedAddress.complemento }}</template>
+                                                    </div>
+                                                    <div>
+                                                        {{ selectedAddress.bairro }} - {{ selectedAddress.cidade }}/{{ selectedAddress.uf }}
+                                                    </div>
+                                                    <div v-if="selectedAddress.estimativa" class="small mt-2">
+                                                        Você receberá na {{ selectedAddress.estimativa }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="fw-semibold text-muted small mb-2">
+                                            Trocar endereço
+                                        </div>
                                         <template v-for="(address, i) in account.addresses" :key="i">
-                                            <div class="card address-card" @click="setAddress(address)">
+                                            <div
+                                                :class="[
+                                                    'card address-card',
+                                                    { 'border-success shadow-sm': selectedAddress.id === address.id }
+                                                ]"
+                                                @click="setAddress(address)"
+                                            >
                                                 <div class="address-card__body">
                                                     <div
                                                         v-if="selectedAddress.id === address.id"
-                                                        class="address-card__badge"
+                                                        class="address-card__badge text-bg-success"
                                                     >
                                                         Selecionado
                                                     </div>
@@ -46,7 +77,7 @@
                                                             class="float-end input-radio__input input-radio__circle"
                                                             :value="address.id"
                                                             :checked="selectedAddress.id === address.id"
-                                                            @click="selectedAddress = address"
+                                                            @change="setAddress(address)"
                                                         >
                                                         <span class="input-radio__circle" />
                                                     </span>
@@ -100,125 +131,245 @@
                                         <h3 class="card-title">
                                             Identificação
                                         </h3>
+                                        <div v-show="createError" class="alert alert-danger mb-3">{{ createError }}</div>
                                         <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-nome"
-                                                v-model="user.nome"
-                                                label="Nome"
-                                                type="text"
-                                                required
-                                                invalid-feedback="Você deve informar seu Nome"
-                                            />
-                                        </div>
-                                        <div class="form-group">
-                                            <mdb-select
-                                                v-model="comboTipoPessoa"
-                                                label="Tipo Pessoa"
-                                                @change="checkTipoPessoa()"
-                                            />
-                                        </div>
-                                        <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-document"
-                                                v-model="user.document"
-                                                v-mdb-input-mask="documentMask"
-                                                required
-                                                invalid-feedback="Você deve informar seu CPF/CNPJ"
-                                                type="text"
-                                                label="CPF / CNPJ"
-                                            />
-                                        </div>
-                                        <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-email"
-                                                v-model="user.email"
-                                                type="text"
-                                                label="Email"
-                                                required
-                                                invalid-feedback="Você deve informar seu E-mail"
-                                            />
-                                        </div>
-                                        <div class="form-group">
-                                            <mdb-input id="checkout-celular" v-model="user.telefone_celular" v-mdb-input-mask="'(♠♠) ♠♠♠♠♠-♠♠♠♠'" type="text" label="Telefone Celular" />
-                                        </div>
-                                        <div class="form-group">
-                                            <mdb-input id="checkout-residencial" v-model="user.telefone_residencial" v-mdb-input-mask="'(♠♠) ♠♠♠♠-♠♠♠♠'" type="text" label="Telefone Residencial" />
-                                        </div>
-                                        <div class="form-group">
-                                            <mdb-input id="checkout-comercial" v-model="user.telefone_comercial" v-mdb-input-mask="'(♠♠) ♠♠♠♠-♠♠♠♠'" type="text" label="Telefone Comercial" />
-                                        </div>
-                                        <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-cep"
-                                                v-model="user.cep"
-                                                v-mdb-input-mask="'♠♠♠♠♠-♠♠♠'"
-                                                type="text"
-                                                label="CEP"
-                                                :class="{ 'is-invalid': cepError }"
-                                                @blur="buscaCEP()"
-                                            />
-                                            <div
-                                                class="invalid-feedback"
-                                                required
-                                                invalidFeedback="Você deve informar seu CEP"
-                                            >
-                                                {{ cepError }}
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-nome"
+                                                    ref="nomeRef"
+                                                    v-model="user.nome"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Nome"
+                                                    autocomplete="name"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'nome' && messageError }"
+                                                >
+                                                <label for="checkout-nome">Nome</label>
+                                                <div class="invalid-feedback">Você deve informar seu Nome Completo</div>
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-logradouro"
-                                                v-model="user.logradouro"
-                                                type="text"
-                                                label="Logradouro"
-                                                required
-                                                invalid-feedback="Você deve informar seu Endereço"
-                                            />
+                                            <div class="form-floating">
+                                                <select id="checkout-tipo-pessoa" v-model="user.tipo_pessoa" class="form-select" @change="checkTipoPessoa">
+                                                    <option value="1">Pessoa Física</option>
+                                                    <option value="2">Pessoa Jurídica</option>
+                                                </select>
+                                                <label for="checkout-tipo-pessoa">Tipo Pessoa</label>
+                                            </div>
                                         </div>
                                         <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-numero"
-                                                ref="numeroRef"
-                                                v-model="user.numero"
-                                                type="text"
-                                                label="Número"
-                                                required
-                                                invalid-feedback="Você deve informar seu Número"
-                                            />
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-document"
+                                                    ref="documentRef"
+                                                    v-model="user.document"
+                                                    type="text"
+                                                    inputmode="numeric"
+                                                    class="form-control"
+                                                    placeholder="CPF / CNPJ"
+                                                    autocomplete="off"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'document' && messageError }"
+                                                    @input="onDocumentInput"
+                                                    @blur="validateDocumentField(true)"
+                                                >
+                                                <label for="checkout-document">CPF / CNPJ</label>
+                                                <div class="invalid-feedback">
+                                                    {{ fieldError == 'document' && messageError ? messageError : 'Você deve informar seu CPF/CNPJ' }}
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-group">
-                                            <mdb-input id="checkout-complemento" v-model="user.complemento" type="text" label="Complemento" />
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-email"
+                                                    ref="emailRef"
+                                                    v-model="user.email"
+                                                    type="email"
+                                                    class="form-control"
+                                                    placeholder="email@exemplo.com"
+                                                    autocomplete="email"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'email' && messageError }"
+                                                    @input="onEmailInput"
+                                                    @blur="validateEmailField(true)"
+                                                >
+                                                <label for="checkout-email">Email</label>
+                                                <div class="invalid-feedback">
+                                                    {{ fieldError == 'email' && messageError ? messageError : 'Informe um e-mail válido, como nome@exemplo.com' }}
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-bairro"
-                                                v-model="user.bairro"
-                                                type="text"
-                                                label="Bairro"
-                                                required
-                                                invalid-feedback="Você deve informar seu Bairro"
-                                            />
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-celular"
+                                                    ref="telefoneCelularRef"
+                                                    v-model="user.telefone_celular"
+                                                    type="text"
+                                                    inputmode="tel"
+                                                    class="form-control"
+                                                    placeholder="Telefone Celular"
+                                                    autocomplete="tel"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'telefone_celular' && messageError }"
+                                                    @input="onCellPhoneInput"
+                                                    @blur="validateCellPhoneField(true)"
+                                                >
+                                                <label for="checkout-celular">Telefone Celular</label>
+                                                <div class="invalid-feedback">
+                                                    {{ fieldError == 'telefone_celular' && messageError ? messageError : 'Informe seu telefone celular com DDD' }}
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-group">
-                                            <mdb-input
-                                                id="checkout-cidade"
-                                                v-model="user.cidade"
-                                                type="text"
-                                                label="Cidade"
-                                                required
-                                                invalid-feedback="Você deve informar seu Cidade"
-                                            />
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-residencial"
+                                                    v-model="user.telefone_residencial"
+                                                    type="text"
+                                                    inputmode="tel"
+                                                    class="form-control"
+                                                    placeholder="Telefone Residencial"
+                                                    autocomplete="tel"
+                                                    @input="formatPhone('telefone_residencial')"
+                                                >
+                                                <label for="checkout-residencial">Telefone Residencial</label>
+                                            </div>
                                         </div>
                                         <div class="form-group">
-                                            <mdb-select
-                                                v-model="comboUF"
-                                                search
-                                                label="UF"
-                                                search-placeholder="Informe o Estado"
-                                                required
-                                                invalid-feedback="Você deve informar seu Estado"
-                                                @change="changeUF()"
-                                            />
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-comercial"
+                                                    v-model="user.telefone_comercial"
+                                                    type="text"
+                                                    inputmode="tel"
+                                                    class="form-control"
+                                                    placeholder="Telefone Comercial"
+                                                    autocomplete="tel"
+                                                    @input="formatPhone('telefone_comercial')"
+                                                >
+                                                <label for="checkout-comercial">Telefone Comercial</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-cep"
+                                                    v-model="user.cep"
+                                                    type="text"
+                                                    inputmode="numeric"
+                                                    maxlength="9"
+                                                    class="form-control"
+                                                    placeholder="CEP"
+                                                    autocomplete="postal-code"
+                                                    required
+                                                    :class="{ 'is-invalid': cepError }"
+                                                    @input="formatCep"
+                                                    @blur="buscaCEP()"
+                                                >
+                                                <label for="checkout-cep">CEP</label>
+                                                <div class="invalid-feedback">{{ cepError || 'Você deve informar seu CEP' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-logradouro"
+                                                    ref="logradouroRef"
+                                                    v-model="user.logradouro"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Logradouro"
+                                                    autocomplete="address-line1"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'logradouro' && messageError }"
+                                                >
+                                                <label for="checkout-logradouro">Logradouro</label>
+                                                <div class="invalid-feedback">Você deve informar seu Endereço</div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-numero"
+                                                    ref="numeroRef"
+                                                    v-model="user.numero"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Número"
+                                                    autocomplete="address-line2"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'numero' && messageError }"
+                                                >
+                                                <label for="checkout-numero">Número</label>
+                                                <div class="invalid-feedback">Você deve informar o Número</div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-complemento"
+                                                    v-model="user.complemento"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Complemento"
+                                                    autocomplete="address-line3"
+                                                >
+                                                <label for="checkout-complemento">Complemento</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-bairro"
+                                                    ref="bairroRef"
+                                                    v-model="user.bairro"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Bairro"
+                                                    autocomplete="address-level3"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'bairro' && messageError }"
+                                                >
+                                                <label for="checkout-bairro">Bairro</label>
+                                                <div class="invalid-feedback">Você deve informar seu Bairro</div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-floating">
+                                                <input
+                                                    id="checkout-cidade"
+                                                    ref="cidadeRef"
+                                                    v-model="user.cidade"
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Cidade"
+                                                    autocomplete="address-level2"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'cidade' && messageError }"
+                                                >
+                                                <label for="checkout-cidade">Cidade</label>
+                                                <div class="invalid-feedback">Você deve informar sua Cidade</div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-floating">
+                                                <select
+                                                    id="checkout-uf"
+                                                    v-model="user.uf"
+                                                    class="form-select"
+                                                    autocomplete="address-level1"
+                                                    required
+                                                    :class="{ 'is-invalid': fieldError == 'uf' && messageError }"
+                                                >
+                                                    <option value="" disabled>Informe o Estado</option>
+                                                    <option v-for="uf in ufs" :key="uf" :value="uf">{{ uf }}</option>
+                                                </select>
+                                                <label for="checkout-uf">UF</label>
+                                                <div class="invalid-feedback">Você deve informar seu Estado</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -288,124 +439,116 @@
 
                                         <div class="payment-methods">
                                             <ul class="payment-methods__list">
-                                                <Collapse :is-open="currentPayment === 4">
-                                                    <li class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 4 }">
-                                                        <label class="payment-methods__item-header">
-                                                            <span class="payment-methods__item-radio input-radio">
-                                                                <span class="input-radio__body">
-                                                                    <input
-                                                                        type="radio"
-                                                                        class="input-radio__input"
-                                                                        name="checkout_payment_method"
-                                                                        :value="4"
-                                                                        :checked="currentPayment === 4"
-                                                                        @click="currentPayment = 4"
-                                                                    >
-                                                                    <span class="input-radio__circle" />
-                                                                </span>
+                                                <li class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 4 }">
+                                                    <label class="payment-methods__item-header">
+                                                        <span class="payment-methods__item-radio input-radio">
+                                                            <span class="input-radio__body">
+                                                                <input
+                                                                    type="radio"
+                                                                    class="input-radio__input"
+                                                                    name="checkout_payment_method"
+                                                                    :value="4"
+                                                                    :checked="currentPayment === 4"
+                                                                    @click="currentPayment = 4"
+                                                                >
+                                                                <span class="input-radio__circle" />
                                                             </span>
-                                                            <span class="payment-methods__item-title">
-                                                                Pix
-                                                            </span>
-                                                        </label>
-                                                        <div class="payment-methods__item-container">
-                                                            <div class="payment-methods__item-description text-muted">
-                                                                Pague via PIX um novo sistema de Pagamentos Instantâneos criado pelo Banco Central e aceito por todos bancos. Você paga diretamente pelo seu aplicativo.
-                                                            </div>
+                                                        </span>
+                                                        <span class="payment-methods__item-title">
+                                                            Pix
+                                                        </span>
+                                                    </label>
+                                                    <div class="payment-methods__item-container">
+                                                        <div class="payment-methods__item-description text-muted">
+                                                            Pague via PIX um novo sistema de Pagamentos Instantâneos criado pelo Banco Central e aceito por todos bancos. Você paga diretamente pelo seu aplicativo.
                                                         </div>
-                                                    </li>
-                                                </Collapse>
-                                                <Collapse :is-open="currentPayment === 1" v-if="false && !cartStore.checkForVGA?.hasOnlyVGA">
-                                                    <li class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 1 }">
-                                                        <label class="payment-methods__item-header">
-                                                            <span class="payment-methods__item-radio input-radio">
-                                                                <span class="input-radio__body">
-                                                                    <input
-                                                                        type="radio"
-                                                                        class="input-radio__input"
-                                                                        name="checkout_payment_method"
-                                                                        :value="1"
-                                                                        :checked="currentPayment === 1"
-                                                                        @click="currentPayment = 1"
-                                                                    >
-                                                                    <span class="input-radio__circle" />
-                                                                </span>
+                                                    </div>
+                                                </li>
+                                                <li v-if="false && !cartStore.checkForVGA?.hasOnlyVGA" class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 1 }">
+                                                    <label class="payment-methods__item-header">
+                                                        <span class="payment-methods__item-radio input-radio">
+                                                            <span class="input-radio__body">
+                                                                <input
+                                                                    type="radio"
+                                                                    class="input-radio__input"
+                                                                    name="checkout_payment_method"
+                                                                    :value="1"
+                                                                    :checked="currentPayment === 1"
+                                                                    @click="currentPayment = 1"
+                                                                >
+                                                                <span class="input-radio__circle" />
                                                             </span>
-                                                            <span class="payment-methods__item-title">
-                                                                Boleto Bancário
-                                                            </span>
-                                                        </label>
-                                                        <div class="payment-methods__item-container">
-                                                            <div class="payment-methods__item-description text-muted">
-                                                                Pague no Boleto Bancário em qualquer agência bancária de sua preferência.Digite aqui
-                                                            </div>
+                                                        </span>
+                                                        <span class="payment-methods__item-title">
+                                                            Boleto Bancário
+                                                        </span>
+                                                    </label>
+                                                    <div class="payment-methods__item-container">
+                                                        <div class="payment-methods__item-description text-muted">
+                                                            Pague no Boleto Bancário em qualquer agência bancária de sua preferência.Digite aqui
                                                         </div>
-                                                    </li>
-                                                </Collapse>
-                                                <Collapse v-if="false" :is-open="currentPayment === 2">
-                                                    <li class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 2 }">
-                                                        <label class="payment-methods__item-header">
-                                                            <span class="payment-methods__item-radio input-radio">
-                                                                <span class="input-radio__body">
-                                                                    <input
-                                                                        type="radio"
-                                                                        class="input-radio__input"
-                                                                        name="checkout_payment_method"
-                                                                        :value="2"
-                                                                        :checked="currentPayment === 2"
-                                                                        @click="currentPayment = 2"
-                                                                    >
-                                                                    <span class="input-radio__circle" />
-                                                                </span>
+                                                    </div>
+                                                </li>
+                                                <li v-if="false" class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 2 }">
+                                                    <label class="payment-methods__item-header">
+                                                        <span class="payment-methods__item-radio input-radio">
+                                                            <span class="input-radio__body">
+                                                                <input
+                                                                    type="radio"
+                                                                    class="input-radio__input"
+                                                                    name="checkout_payment_method"
+                                                                    :value="2"
+                                                                    :checked="currentPayment === 2"
+                                                                    @click="currentPayment = 2"
+                                                                >
+                                                                <span class="input-radio__circle" />
                                                             </span>
-                                                            <span class="payment-methods__item-title">
-                                                                Banricompras
-                                                            </span>
-                                                        </label>
-                                                        <div class="payment-methods__item-container">
-                                                            <div class="payment-methods__item-description text-muted">
-                                                                <select v-model="parcelas" class="form-control">
-                                                                    <option value="0">
-                                                                        {{ price(cart.subtotal/.85*.88+cart.shipping) }} no Débito com 12% de desconto
-                                                                    </option>
-                                                                    <option value="1">
-                                                                        {{ price(cart.subtotal/.85*.88+cart.shipping) }} Pré Datado 30 dias
-                                                                    </option>
-                                                                    <option v-for="parcela of [2,3,4,5,6,7,8,9,10,11,12]" :key="parcela" :value="parcela">
-                                                                        {{ price(cart.total/.85) }} em {{ parcela }}x sem juros de {{ price((cart.total/.85)/parcela) }}
-                                                                    </option>
-                                                                </select>
-                                                            </div>
+                                                        </span>
+                                                        <span class="payment-methods__item-title">
+                                                            Banricompras
+                                                        </span>
+                                                    </label>
+                                                    <div class="payment-methods__item-container">
+                                                        <div class="payment-methods__item-description text-muted">
+                                                            <select v-model="parcelas" class="form-control">
+                                                                <option value="0">
+                                                                    {{ price(cart.subtotal/.85*.88+cart.shipping) }} no Débito com 12% de desconto
+                                                                </option>
+                                                                <option value="1">
+                                                                    {{ price(cart.subtotal/.85*.88+cart.shipping) }} Pré Datado 30 dias
+                                                                </option>
+                                                                <option v-for="parcela of [2,3,4,5,6,7,8,9,10,11,12]" :key="parcela" :value="parcela">
+                                                                    {{ price(cart.total/.85) }} em {{ parcela }}x sem juros de {{ price((cart.total/.85)/parcela) }}
+                                                                </option>
+                                                            </select>
                                                         </div>
-                                                    </li>
-                                                </Collapse>
-                                                <Collapse :is-open="currentPayment === 3">
-                                                    <li class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 3 }">
-                                                        <label class="payment-methods__item-header">
-                                                            <span class="payment-methods__item-radio input-radio">
-                                                                <span class="input-radio__body">
-                                                                    <input
-                                                                        type="radio"
-                                                                        class="input-radio__input"
-                                                                        name="checkout_payment_method"
-                                                                        :value="3"
-                                                                        :checked="currentPayment === 3"
-                                                                        @click="currentPayment = 3"
-                                                                    >
-                                                                    <span class="input-radio__circle" />
-                                                                </span>
+                                                    </div>
+                                                </li>
+                                                <li class="payment-methods__item" :class="{ 'payment-methods__item--active': currentPayment === 3 }">
+                                                    <label class="payment-methods__item-header">
+                                                        <span class="payment-methods__item-radio input-radio">
+                                                            <span class="input-radio__body">
+                                                                <input
+                                                                    type="radio"
+                                                                    class="input-radio__input"
+                                                                    name="checkout_payment_method"
+                                                                    :value="3"
+                                                                    :checked="currentPayment === 3"
+                                                                    @click="currentPayment = 3"
+                                                                >
+                                                                <span class="input-radio__circle" />
                                                             </span>
-                                                            <span class="payment-methods__item-title">
-                                                                Cartão de Crédito
-                                                            </span>
-                                                        </label>
-                                                        <div class="payment-methods__item-container">
-                                                            <div class="payment-methods__item-description text-muted">
-                                                                Pague com seu cartão de crédito ou débito em até 12x.
-                                                            </div>
+                                                        </span>
+                                                        <span class="payment-methods__item-title">
+                                                            Cartão de Crédito
+                                                        </span>
+                                                    </label>
+                                                    <div class="payment-methods__item-container">
+                                                        <div class="payment-methods__item-description text-muted">
+                                                            Pague com seu cartão de crédito ou débito em até 12x.
                                                         </div>
-                                                    </li>
-                                                </Collapse>
+                                                    </div>
+                                                </li>
                                             </ul>
                                         </div>
 
@@ -447,9 +590,9 @@
                 <template #modal-title>Processando...</template>
                 <div class="text-center py-4"><div class="btn-loading" /></div>
             </AppModal>
-            <paypal :data="paypalTransparent" />
-            <pix :data="pix" />
-            <MercadoPago v-model="parcelas"
+            <Paypal :data="paypalTransparent" />
+            <Pix :data="pixPayment" />
+            <Mercadopago v-model="parcelas"
                 :valor="parseFloat((cart.subtotal/.85+cart.shipping).toFixed(2))"
                 :valor1x="parseFloat((cart.subtotal/.85*.88+cart.shipping).toFixed(2))"
                 :valor3x="parseFloat((cart.subtotal/.85*.9+cart.shipping).toFixed(2))"
@@ -467,6 +610,7 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { useAccountStore } from '~/stores/account'
+import Check9x7Svg from '~/svg/check-9x7.svg'
 
 const cartStore = useCartStore()
 const account = useAccountStore()
@@ -476,22 +620,12 @@ const { price } = usePrice()
 
 useHead({ title: 'Fechar Compra' })
 
-const cart = computed(() => cartStore)
+const cart = cartStore
 
 const currentPayment = ref(4)
-const comboTipoPessoa = ref([{ text: 'Pessoa Física', value: '1', selected: true }, { text: 'Pessoa Jurídica', value: '2' }])
-const comboUF = ref([{ text: 'AC', value: 'AC', selected: false }, { text: 'AL', value: 'AL' }, { text: 'AM', value: 'AM' }, { text: 'AP', value: 'AP' },
-    { text: 'BA', value: 'BA' }, { text: 'CE', value: 'CE' }, { text: 'DF', value: 'DF' }, { text: 'ES', value: 'ES' },
-    { text: 'GO', value: 'GO' }, { text: 'MA', value: 'MA' }, { text: 'MG', value: 'MG' }, { text: 'MS', value: 'MS' },
-    { text: 'MT', value: 'MT' }, { text: 'PA', value: 'PA' }, { text: 'PB', value: 'PB' }, { text: 'PE', value: 'PE' },
-    { text: 'PI', value: 'PI' }, { text: 'PR', value: 'PR' }, { text: 'RJ', value: 'RJ' }, { text: 'RN', value: 'RN' },
-    { text: 'RO', value: 'RO' }, { text: 'RR', value: 'RR' }, { text: 'RS', value: 'RS' }, { text: 'SC', value: 'SC' },
-    { text: 'SE', value: 'SE' }, { text: 'SP', value: 'SP' }, { text: 'TO', value: 'TO' }])
 
 const parcelas = ref(1)
-const maskCPF = '♠♠♠.♠♠♠.♠♠♠-♠♠'
-const maskCNPJ = '♠♠.♠♠♠.♠♠♠/♠♠♠♠-♠♠'
-const documentMask = ref(maskCPF)
+const ufs = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
 const user = ref({
     nome: '',
     tipo_pessoa: '1',
@@ -509,6 +643,18 @@ const user = ref({
     uf: ''
 })
 
+const fieldError = ref('')
+const messageError = ref('')
+const createError = ref('')
+
+const nomeRef = ref<HTMLInputElement | null>(null)
+const documentRef = ref<HTMLInputElement | null>(null)
+const emailRef = ref<HTMLInputElement | null>(null)
+const telefoneCelularRef = ref<HTMLInputElement | null>(null)
+const logradouroRef = ref<HTMLInputElement | null>(null)
+const bairroRef = ref<HTMLInputElement | null>(null)
+const cidadeRef = ref<HTMLInputElement | null>(null)
+
 const urlShopline = ref('')
 const paypalTransparent = ref({
     mode: 'live',
@@ -521,7 +667,7 @@ const paypalTransparent = ref({
     installmentTerm: '',
     blockinstallment: ''
 })
-const pix = ref({ qrCode: '' })
+const pixPayment = ref({ qrCode: '' })
 const payments = ref([
     { value: null, text: 'Selecione a Bandeira' },
     { value: 1, text: 'VISA', src: 'https://static.hardstore.com.br/images/logo_visa.gif' },
@@ -531,40 +677,251 @@ const payments = ref([
 ])
 const selected = ref({ value: null, text: 'Selecione a Bandeira' })
 const cepError = ref('')
-const createError = ref('')
 const email = ref('')
-const selectedAddress = ref(Object.assign({ error: '' }, account.addresses.filter(x => x.cep == account.cep)[0] || account.addresses[0]))
-const numeroRef = ref<HTMLElement | null>(null)
+const selectedAddress = ref(Object.assign({ error: '' }, getInitialAddress()))
+const numeroRef = ref<HTMLInputElement | null>(null)
 
-function checkTipoPessoa () {
-    if (comboTipoPessoa.value.filter(x => x.selected)[0].value == '1') {
-        documentMask.value = maskCPF
-    } else {
-        documentMask.value = maskCNPJ
+function isDefaultAddress (address: any) {
+    if (!address) return false
+
+    const addressDefault = address.default === true ||
+        String(address.default) === '1' ||
+        address.padrao === true ||
+        String(address.padrao) === '1'
+
+    return addressDefault || String(address.id) === String(account.user.padrao || '')
+}
+
+function getInitialAddress () {
+    const selectedStoreAddress = account.selectedAddress?.id
+        ? account.addresses.find((address: any) => String(address.id) === String(account.selectedAddress.id))
+        : null
+    const accountCep = normalizeCep(account.cep)
+
+    return selectedStoreAddress ||
+        account.addresses.find((address: any) => normalizeCep(address.cep) === accountCep) ||
+        account.addresses.find(isDefaultAddress) ||
+        account.addresses[0]
+}
+
+function normalizeCep (value: string | number) {
+    return String(value || '').replace(/\D/g, '')
+}
+
+function checkTipoPessoa (event?: Event) {
+    const selectedType = (event?.target as HTMLSelectElement | null)?.value
+    if (selectedType === '1' || selectedType === '2') user.value.tipo_pessoa = selectedType
+    clearDocumentValidation()
+    formatDocument()
+    if (user.value.document) validateDocumentField(false)
+}
+
+function setUF (uf: string) {
+    user.value.uf = uf
+}
+
+function onDocumentInput () {
+    formatDocument()
+    if (fieldError.value === 'document') validateDocumentField(false)
+}
+
+function onEmailInput () {
+    if (fieldError.value === 'email') validateEmailField(false)
+}
+
+function onCellPhoneInput () {
+    formatPhone('telefone_celular')
+    if (fieldError.value === 'telefone_celular') validateCellPhoneField(false)
+}
+
+function validateDocumentField (showError = false) {
+    const message = getDocumentError()
+    documentRef.value?.setCustomValidity(message)
+    if (message) {
+        if (showError || fieldError.value === 'document') {
+            fieldError.value = 'document'
+            messageError.value = message
+            createError.value = message
+        }
+        return false
+    }
+    if (fieldError.value === 'document') {
+        fieldError.value = ''
+        messageError.value = ''
+        createError.value = ''
+    }
+    return true
+}
+
+function getDocumentError () {
+    const document = user.value.document.replace(/\D/g, '')
+    const isCnpj = user.value.tipo_pessoa === '2' || document.length > 11
+    if (!document) return 'Você deve informar seu CPF/CNPJ.'
+    if (isCnpj) {
+        if (document.length !== 14) return 'CNPJ inválido, verifique e tente novamente.'
+        if (!isValidCnpj(document)) return 'CNPJ inválido, verifique e tente novamente.'
+        return ''
+    }
+    if (document.length !== 11) return 'CPF inválido, verifique e tente novamente.'
+    if (!isValidCpf(document)) return 'CPF inválido, verifique e tente novamente.'
+    return ''
+}
+
+function clearDocumentValidation () {
+    documentRef.value?.setCustomValidity('')
+    if (fieldError.value === 'document') {
+        fieldError.value = ''
+        messageError.value = ''
+        createError.value = ''
     }
 }
 
-function changeUF () {
-    user.value.uf = comboUF.value.filter(x => x.selected)[0].value
-}
-
-function setUF (uf) {
-    comboUF.value.forEach((option) => { option.selected = false })
-    const found = comboUF.value.filter(x => x.value === uf)[0]
-    if (found) found.selected = true
-    comboUF.value.sort()
-}
-
-function changeDocumentMask () {
-    let changed = false
-    if (user.value.document.length >= 14) {
-        if (documentMask.value != maskCNPJ) { changed = true }
-        documentMask.value = maskCNPJ
-    } else {
-        if (documentMask.value != maskCPF) { changed = true }
-        documentMask.value = maskCPF
+function validateEmailField (showError = false) {
+    const message = getEmailError()
+    emailRef.value?.setCustomValidity(message)
+    if (message) {
+        if (showError || fieldError.value === 'email') {
+            fieldError.value = 'email'
+            messageError.value = message
+            createError.value = message
+        }
+        return false
     }
-    if (changed) { user.value.document = '07.350.337/0001-78' }
+    if (fieldError.value === 'email') {
+        fieldError.value = ''
+        messageError.value = ''
+        createError.value = ''
+    }
+    return true
+}
+
+function getEmailError () {
+    const email = user.value.email.trim()
+    if (!email) return 'Você deve informar seu e-mail.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return 'Informe um e-mail válido, como nome@exemplo.com.'
+    return ''
+}
+
+function validateCellPhoneField (showError = false) {
+    const message = getCellPhoneError()
+    telefoneCelularRef.value?.setCustomValidity(message)
+    if (message) {
+        if (showError || fieldError.value === 'telefone_celular') {
+            fieldError.value = 'telefone_celular'
+            messageError.value = message
+            createError.value = message
+        }
+        return false
+    }
+    if (fieldError.value === 'telefone_celular') {
+        fieldError.value = ''
+        messageError.value = ''
+        createError.value = ''
+    }
+    return true
+}
+
+function getCellPhoneError () {
+    const phone = user.value.telefone_celular.replace(/\D/g, '')
+    if (!phone) return 'Você deve informar seu telefone celular.'
+    if (phone.length !== 11) return 'Informe seu telefone celular com DDD.'
+    if (phone[2] !== '9') return 'Informe um telefone celular válido com DDD.'
+    return ''
+}
+
+function setFieldError (field: string, message: string) {
+    fieldError.value = field
+    messageError.value = message
+    createError.value = message
+    focusField(field)
+    return false
+}
+
+function focusField (field: string) {
+    const refs: Record<string, any> = {
+        nome: nomeRef, document: documentRef, email: emailRef,
+        telefone_celular: telefoneCelularRef, logradouro: logradouroRef,
+        numero: numeroRef, bairro: bairroRef, cidade: cidadeRef
+    }
+    refs[field]?.value?.focus?.()
+}
+
+function validateCheckoutForm () {
+    if (!validateDocumentField(true)) return false
+    if (!validateEmailField(true)) return false
+    if (!validateCellPhoneField(true)) return false
+    const cep = user.value.cep.replace(/\D/g, '')
+    if (!/\S+\s+\S+/.test(user.value.nome.trim()))
+        return setFieldError('nome', 'Você deve informar seu Nome e Sobrenome.')
+    if (cep.length !== 8) {
+        cepError.value = 'O CEP deve ter 8 dígitos'
+        createError.value = cepError.value
+        return false
+    }
+    if (!user.value.logradouro.trim()) return setFieldError('logradouro', 'Você deve informar seu Logradouro.')
+    if (!user.value.numero.trim()) return setFieldError('numero', 'Você deve informar seu Número.')
+    if (!user.value.bairro.trim()) return setFieldError('bairro', 'Você deve informar seu Bairro.')
+    if (!user.value.cidade.trim()) return setFieldError('cidade', 'Você deve informar sua Cidade.')
+    if (!/^[A-Z]{2}$/.test(user.value.uf)) return setFieldError('uf', 'Você deve informar seu Estado.')
+    user.value.email = user.value.email.trim()
+    user.value.document = user.value.document.replace(/\D/g, '')
+    user.value.cep = cep.length === 8 ? `${cep.slice(0, 5)}-${cep.slice(5)}` : user.value.cep
+    return true
+}
+
+function formatCep () {
+    const digits = user.value.cep.replace(/\D/g, '').slice(0, 8)
+    user.value.cep = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
+}
+
+function formatDocument () {
+    const isCnpj = user.value.tipo_pessoa === '2'
+    const maxLength = isCnpj ? 14 : 11
+    const digits = user.value.document.replace(/\D/g, '').slice(0, maxLength)
+    user.value.document = isCnpj ? formatCnpj(digits) : formatCpf(digits)
+}
+
+function formatCpf (digits: string) {
+    if (digits.length > 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+    if (digits.length > 6) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+    if (digits.length > 3) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+    return digits
+}
+
+function formatCnpj (digits: string) {
+    if (digits.length > 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`
+    if (digits.length > 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
+    if (digits.length > 5) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
+    if (digits.length > 2) return `${digits.slice(0, 2)}.${digits.slice(2)}`
+    return digits
+}
+
+function formatPhone (field: 'telefone_celular' | 'telefone_residencial' | 'telefone_comercial') {
+    const digits = user.value[field].replace(/\D/g, '').slice(0, 11)
+    if (digits.length > 10) user.value[field] = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+    else if (digits.length > 6) user.value[field] = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+    else if (digits.length > 2) user.value[field] = `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    else user.value[field] = digits
+}
+
+function isValidCpf (cpf: string) {
+    if (!/^\d{11}$/.test(cpf) || /^(\d)\1+$/.test(cpf)) return false
+    for (let t = 9; t < 11; t++) {
+        let sum = 0
+        for (let c = 0; c < t; c++) sum += Number(cpf[c]) * ((t + 1) - c)
+        if (Number(cpf[t]) !== ((10 * sum) % 11) % 10) return false
+    }
+    return true
+}
+
+function isValidCnpj (cnpj: string) {
+    if (!/^\d{14}$/.test(cnpj) || /^(\d)\1+$/.test(cnpj)) return false
+    const calcDigit = (base: string, weights: number[]) => {
+        const rest = weights.reduce((t, w, i) => t + Number(base[i]) * w, 0) % 11
+        return rest < 2 ? 0 : 11 - rest
+    }
+    return Number(cnpj[12]) === calcDigit(cnpj.slice(0, 12), [5,4,3,2,9,8,7,6,5,4,3,2])
+        && Number(cnpj[13]) === calcDigit(cnpj.slice(0, 13), [6,5,4,3,2,9,8,7,6,5,4,3,2])
 }
 
 function selectPayment (option) {
@@ -587,7 +944,10 @@ function stock () {
 }
 
 function setAddress (address) {
-    if (address) { selectedAddress.value = Object.assign({ error: '' }, address) }
+    if (address) {
+        account.selectAddress(address.id)
+        selectedAddress.value = Object.assign({ error: '' }, address)
+    }
     account.calculaFrete({
         cep: selectedAddress.value.cep,
         peso: weight(),
@@ -625,7 +985,7 @@ function setAddress (address) {
 
 function calculaFrete () {
     let loja = true
-    for (let i=0;cartStore.items.length;i++) {
+    for (let i=0;i<cartStore.items.length;i++) {
         if (cartStore.items[i]?.local != 1) {
             loja = false
             break
@@ -673,6 +1033,7 @@ function calculaFrete () {
 
 function checkForm (event) {
     event.target.classList.add('was-validated')
+    if (!account.logged && !validateCheckoutForm()) return
     createOrder()
 }
 
@@ -745,32 +1106,38 @@ function openMercadoPago () {
     useModal().show('modalMercadoPago')
 }
 
-function buscaCEP (noFocus?) {
+function buscaCEP (noFocus?: boolean) {
     cepError.value = ''
-    if (user.value.cep.toString().replace(/\D/g, '').length !== 8) {
-        cepError.value = 'O CEP deve ter 8 digitos'
+    const cep = user.value.cep.replace(/\D/g, '')
+    if (cep.length !== 8) {
+        cepError.value = 'O CEP deve ter 8 dígitos'
+    } else if (cep !== account.cep.replace(/\D/g, '')) {
+        calculaFrete()
+        if (!noFocus) nextTick(() => numeroRef.value?.focus())
     } else {
-        account.buscaCEP(user.value.cep).then((result) => {
+        account.buscaCEP(cep).then((result) => {
             if (result.message) {
                 cepError.value = result.message
             } else {
-                if (!noFocus) { numeroRef.value?.focus() }
+                if (!noFocus) numeroRef.value?.focus()
                 setUF(result.state)
-                user.value.uf = result.state
                 user.value.cidade = result.city
                 user.value.bairro = result.neighborhood
                 user.value.logradouro = result.street
             }
+        }).catch(() => {
+            cepError.value = 'Não foi possível consultar o CEP agora.'
         })
     }
 }
 
-onMounted(() => {
+onMounted(async () => {
     if (!account.logged) {
         calculaFrete()
     } else {
         try {
-            setAddress(account.addresses[0])
+            if (!account.addresses.length) await account.getAddresses()
+            setAddress(getInitialAddress())
         } catch {
         }
     }

@@ -59,9 +59,13 @@ function buildColumns(rows: number, products: any[]): any[][] {
 
 const carouselOptionsBase: SwiperOptions = {
     autoplay: {
-        delay: 5000
+        delay: 5000,
+        disableOnInteraction: false
     },
-    pagination: {},
+    speed: 300,
+    pagination: {
+        clickable: true
+    },
     roundLengths: true
 }
 const carouselOptionsByLayout: Record<string, SwiperOptions> = {
@@ -161,6 +165,8 @@ onUpdated(() => {
     if (updateCarousel.value) {
         updateCarousel.value = false
         carousel.value?.swiper?.update()
+        carousel.value?.swiper?.slideTo(0, 0, false)
+        carousel.value?.swiper?.autoplay?.start()
     }
 })
 

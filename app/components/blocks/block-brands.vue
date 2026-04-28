@@ -18,13 +18,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useShopStore } from '~/stores/shop'
-import { SwiperOptions } from 'swiper'
+import type { SwiperOptions } from 'swiper/types'
 
 const carouselOptions: SwiperOptions = {
     autoplay: {
         delay: 1000
     },
-    pagination: {},
+    speed: 550,
+    pagination: {
+        clickable: true
+    },
     roundLengths: true,
     slidesPerView: 2,
     breakpoints: {

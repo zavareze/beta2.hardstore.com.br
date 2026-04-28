@@ -1,5 +1,6 @@
 <template>
     <div
+        ref="indicatorElement"
         :class="[
             'indicator',
             `indicator--trigger--${trigger}`,
@@ -48,11 +49,13 @@ const props = withDefaults(defineProps<{
     to?: string
     trigger?: Trigger
     location?: Location
+    closeDelayOnMouseLeave?: number
 }>(), {
     value: null,
     to: '',
     trigger: 'none',
-    location: 'nav-panel'
+    location: 'nav-panel',
+    closeDelayOnMouseLeave: 0
 })
 
 const emit = defineEmits<{
@@ -61,10 +64,12 @@ const emit = defineEmits<{
     close: []
 }>()
 
+const indicatorElement = ref<HTMLElement | undefined>(undefined)
 const dropdownElement = ref<HTMLElement | undefined>(undefined)
 const isDisplay = ref(false)
 const isOpen = ref(false)
 const isHovered = ref(false)
+let closeTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
     if (dropdownElement.value) {
@@ -74,6 +79,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+    clearCloseTimer()
     if (dropdownElement.value) {
         dropdownElement.value.removeEventListener('transitionend', onTransitionEnd)
     }
@@ -81,6 +87,7 @@ onBeforeUnmount(() => {
 })
 
 function onMouseEnter() {
+    clearCloseTimer()
     isHovered.value = true
     if (props.trigger === 'hover' && dropdownElement.value) {
         open()
@@ -91,6 +98,13 @@ function onMouseLeave() {
     isHovered.value = false
     if (props.trigger === 'hover' && dropdownElement.value) {
         close()
+        return
+    }
+    if (props.closeDelayOnMouseLeave > 0 && isOpen.value) {
+        closeTimer = setTimeout(() => {
+            close()
+            closeTimer = null
+        }, props.closeDelayOnMouseLeave)
     }
 }
 
@@ -106,7 +120,16 @@ function onClick(event: MouseEvent) {
 }
 
 function onGlobalClick(event: MouseEvent) {
-    // close on outside click - handled via ref
+    if (props.trigger !== 'click' || !isOpen.value) {
+        return
+    }
+
+    const target = event.target as Node | null
+    if (target && indicatorElement.value?.contains(target)) {
+        return
+    }
+
+    close()
 }
 
 function onTransitionEnd(event: TransitionEvent) {
@@ -128,6 +151,7 @@ function toggle() {
 }
 
 function open() {
+    clearCloseTimer()
     isOpen.value = true
     isDisplay.value = true
     if (!dropdownElement.value) {
@@ -141,11 +165,19 @@ function open() {
 }
 
 function close(immediately = false) {
+    clearCloseTimer()
     isOpen.value = false
     if (immediately) {
         isDisplay.value = false
     }
     emit('close')
+}
+
+function clearCloseTimer() {
+    if (closeTimer) {
+        clearTimeout(closeTimer)
+        closeTimer = null
+    }
 }
 
 defineExpose({ open, close, toggle })
