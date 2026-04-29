@@ -63,8 +63,8 @@ const accountApi = {
             return axios.post('https://api.hardstore.com.br/api/enderecos', payload).then(response => response)
         }
     },
-    setUser: (payload) => {
-        if (payload.id || payload.nova_senha) {
+    setUser: (payload, forceUpdate = false) => {
+        if (forceUpdate || payload.id || payload.nova_senha) {
             return axios.put('https://api.hardstore.com.br/api/user', payload).then(response => response)
         } else {
             return axios.post('https://api.hardstore.com.br/api/user', payload).then(response => response)

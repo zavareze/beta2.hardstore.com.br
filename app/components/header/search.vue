@@ -10,7 +10,7 @@
         ]"
     >
         <div class="search__body">
-            <form class="search__form" action="/shop">
+            <form class="search__form" action="/shop/catalog">
                 <select
                     style="background-color:black; color:white"
                     v-if="location === 'header'"

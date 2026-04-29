@@ -49,10 +49,10 @@ $local-padding: 12px;
 .breadcrumb-arrow {
     fill: $breadcrumb-arrow-color;
     position: absolute;
-    top: 5px;
+    top: 50%;
 
     @include direction {
         #{$inset-inline-end}: $local-padding - 1px;
-        transform: scaleX(1 * $transform-direction);
+        transform: scaleX(1 * $transform-direction) translateY(-50%);
     }
 }

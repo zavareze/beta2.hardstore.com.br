@@ -6,7 +6,7 @@
                 Minha Conta
             </div>
             <div class="form-group">
-                <input id="header-signin-email" v-model="user" type="text" placeholder="Email ou CPF" class="form-control" />
+                <input id="header-signin-email" v-model="user" type="text" placeholder="Email ou CPF/CNPJ" class="form-control" />
             </div>
             <div class="form-group">
                 <div class="account-menu__form-forgot">

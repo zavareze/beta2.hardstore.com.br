@@ -73,6 +73,13 @@ export default defineNuxtConfig({
     },
 
     vite: {
+        vue: {
+            template: {
+                compilerOptions: {
+                    isCustomElement: tag => tag === 'paypal-plus'
+                }
+            }
+        },
         server: {
             allowedHosts: ['beta2.hardstore.com.br'],
             fs: {

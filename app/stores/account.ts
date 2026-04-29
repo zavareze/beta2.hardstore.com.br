@@ -25,6 +25,10 @@ export const useAccountStore = defineStore('account', {
         selectedOrder: {} as any,
         selectedAddress: {} as any,
         selectedUser: {} as any,
+        defaultAddress: {
+            userKey: '',
+            addressId: ''
+        },
         cep: '',
         calculoFrete: {
             error: '',
@@ -76,6 +80,9 @@ export const useAccountStore = defineStore('account', {
                     this.token = result.data.token
                     this.user = result.data.user
                     this.addresses = result.data.addresses
+                    this.restorePersistedDefaultAddress()
+                    const defaultAddress = this.getDefaultAddress()
+                    if (defaultAddress?.cep) this.setCEP(defaultAddress.cep)
                     this.logged = true
                     this.error = ''
                     const redirect = typeof payload.redirect === 'string' && payload.redirect.startsWith('/') && !payload.redirect.startsWith('//')
@@ -103,6 +110,9 @@ export const useAccountStore = defineStore('account', {
                     this.token = result.data.token
                     this.user = result.data.user
                     this.addresses = result.data.addresses
+                    this.restorePersistedDefaultAddress()
+                    const defaultAddress = this.getDefaultAddress()
+                    if (defaultAddress?.cep) this.setCEP(defaultAddress.cep)
                     this.logged = true
                     this.error = ''
                     const router = useRouter()
@@ -232,7 +242,7 @@ export const useAccountStore = defineStore('account', {
             }
 
             if (this.token) accountApi.setToken(this.token)
-            const result: any = await accountApi.setUser(payload)
+            const result: any = await accountApi.setUser(payload, Boolean(this.token))
             if (result.status === 200) {
                 accountApi.setToken(result.data.data.token)
                 this.token = result.data.data.token
@@ -241,6 +251,90 @@ export const useAccountStore = defineStore('account', {
             }
             this.error = result.message
             throw result.response?.data
+        },
+        isDefaultAddress(address: any) {
+            if (!address?.id) return false
+
+            const persistedAddressId = this.getPersistedDefaultAddressId()
+            if (persistedAddressId) return String(address.id) === String(persistedAddressId)
+
+            const defaultAddressId = this.user.padrao
+            if (defaultAddressId) return String(address.id) === String(defaultAddressId)
+
+            return address.default === true ||
+                String(address.default) === '1' ||
+                address.padrao === true ||
+                String(address.padrao) === '1'
+        },
+        getDefaultAddress() {
+            return this.addresses.find((address: any) => this.isDefaultAddress(address)) ||
+                this.addresses[0]
+        },
+        getDefaultAddressUserKey() {
+            return String(this.user.document || this.user.email || this.user.user || '')
+        },
+        getPersistedDefaultAddressId() {
+            const userKey = this.getDefaultAddressUserKey()
+            if (!userKey || this.defaultAddress.userKey !== userKey) return ''
+            const addressId = String(this.defaultAddress.addressId || '')
+            if (!addressId) return ''
+            return this.addresses.some((address: any) => String(address.id) === addressId) ? addressId : ''
+        },
+        restorePersistedDefaultAddress() {
+            const persistedAddressId = this.getPersistedDefaultAddressId()
+            if (!persistedAddressId) return
+
+            this.user = {
+                ...this.user,
+                padrao: persistedAddressId
+            }
+        },
+        async setDefaultAddress(address: any) {
+            if (!address?.id) {
+                throw new Error('Endereço inválido.')
+            }
+            if (!this.token) {
+                this.logout()
+                useRouter().replace({ path: '/account/login' })
+                throw new Error('Sessão expirada. Faça login novamente.')
+            }
+
+            const padrao = address.id
+            accountApi.setToken(this.token)
+            try {
+                await accountApi.setAddress({
+                    ...address,
+                    default: 1,
+                    padrao: 1
+                })
+            } catch (error) {
+                console.warn('default address update through address endpoint failed', error)
+            }
+            await this.setUser({
+                ...this.user,
+                padrao,
+                nova_senha: '',
+                confirme_senha: ''
+            })
+
+            this.user = {
+                ...this.user,
+                padrao
+            }
+            this.defaultAddress = {
+                userKey: this.getDefaultAddressUserKey(),
+                addressId: String(padrao)
+            }
+            this.addresses = this.addresses.map((item: any) => {
+                const isSelected = String(item.id) === String(padrao)
+
+                return {
+                    ...item,
+                    default: isSelected,
+                    padrao: isSelected ? 1 : 0
+                }
+            })
+            if (address.cep) this.setCEP(address.cep)
         },
         selectOrder(id: number) {
             this.selectedOrder = this.orders.find(x => x.id === id * 1) || {}
@@ -316,6 +410,6 @@ export const useAccountStore = defineStore('account', {
         }
     },
     persist: {
-        pick: ['token', 'user', 'logged', 'rememberUser', 'cep']
+        pick: ['token', 'user', 'logged', 'rememberUser', 'cep', 'defaultAddress']
     }
 })

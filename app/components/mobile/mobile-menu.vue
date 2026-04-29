@@ -16,7 +16,9 @@
                 </button>
             </div>
             <div class="mobilemenu__content">
-                <MobileLinks :links="shopStore.categoryListMobile" @itemClick="onItemClick" />
+                <ClientOnly>
+                    <MobileLinks :links="shopStore.categoryListMobile" @itemClick="onItemClick" />
+                </ClientOnly>
             </div>
         </div>
     </div>
@@ -30,10 +32,9 @@ import Cross20Svg from '~/svg/cross-20.svg'
 const mobileMenuStore = useMobileMenuStore()
 const shopStore = useShopStore()
 
-await useAsyncData('mobile-menu-categories', async () => {
-    await shopStore.fetchCategory({ categorySlug: null })
-    return true
-})
+if (!shopStore.categoryList) {
+    shopStore.fetchCategory({ categorySlug: null })
+}
 
 function onItemClick(item: any) {
     mobileMenuStore.close()

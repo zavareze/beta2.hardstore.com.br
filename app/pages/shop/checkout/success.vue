@@ -108,6 +108,7 @@
 <script setup lang="ts">
 import { useAccountStore } from '~/stores/account'
 import { useCartStore } from '~/stores/cart'
+import Check100Svg from '~/svg/check-100.svg'
 
 const account = useAccountStore()
 const cartStore = useCartStore()

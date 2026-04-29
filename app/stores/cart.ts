@@ -179,6 +179,9 @@ export const useCartStore = defineStore('cart', {
             this.weight = calcWeight(this.items)
             this.total = this.subtotal + this.shipping
         },
+        clear() {
+            this.clean()
+        },
         setConsent() {
             this.consent = true
         }

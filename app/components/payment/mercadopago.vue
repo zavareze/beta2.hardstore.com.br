@@ -10,6 +10,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+
+defineOptions({ inheritAttrs: false })
 import { useAccountStore } from '~/stores/account'
 import { useRouter } from 'vue-router'
 

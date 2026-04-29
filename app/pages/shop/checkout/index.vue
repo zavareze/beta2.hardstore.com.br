@@ -682,14 +682,7 @@ const selectedAddress = ref(Object.assign({ error: '' }, getInitialAddress()))
 const numeroRef = ref<HTMLInputElement | null>(null)
 
 function isDefaultAddress (address: any) {
-    if (!address) return false
-
-    const addressDefault = address.default === true ||
-        String(address.default) === '1' ||
-        address.padrao === true ||
-        String(address.padrao) === '1'
-
-    return addressDefault || String(address.id) === String(account.user.padrao || '')
+    return account.isDefaultAddress(address)
 }
 
 function getInitialAddress () {
@@ -697,10 +690,11 @@ function getInitialAddress () {
         ? account.addresses.find((address: any) => String(address.id) === String(account.selectedAddress.id))
         : null
     const accountCep = normalizeCep(account.cep)
+    const defaultAddress = account.getDefaultAddress()
 
     return selectedStoreAddress ||
+        defaultAddress ||
         account.addresses.find((address: any) => normalizeCep(address.cep) === accountCep) ||
-        account.addresses.find(isDefaultAddress) ||
         account.addresses[0]
 }
 

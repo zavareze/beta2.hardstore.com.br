@@ -82,9 +82,7 @@ const { price } = usePrice()
 useHead({ title: 'Minha Conta' })
 
 const defaultAddress = computed(() => {
-    const addressId = account.user.padrao
-    return account.addresses.filter((endereco: any) => endereco.id === addressId)[0] ||
-        account.addresses[0] ||
+    return account.getDefaultAddress() ||
         {
             id: '',
             cep: '',
@@ -106,6 +104,7 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
+    account.getAddresses()
     account.fetchOrders(5)
 })
 </script>

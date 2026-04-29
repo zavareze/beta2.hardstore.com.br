@@ -180,6 +180,7 @@ function closeMenu(immediately = false) {
     const root = content.value?.closest('.departments') as HTMLElement
     if (!root || !content.value) return
     if (immediately) {
+        isTransition.value = false
         content.value.style.transitionDuration = '0s'
         content.value.style.height = ''
         content.value.style.maxHeight = ''

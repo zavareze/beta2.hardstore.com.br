@@ -119,6 +119,7 @@
 <script setup lang="ts">
 import { useWishlistStore } from '~/stores/wishlist'
 import { useCartStore } from '~/stores/cart'
+import Cross12Svg from '~/svg/cross-12.svg'
 
 const wishlistStore = useWishlistStore()
 const cartStore = useCartStore()

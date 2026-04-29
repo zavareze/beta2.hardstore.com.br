@@ -3,6 +3,7 @@
         <div class="filter-price__slider">
             <ClientOnly>
                 <VueSlider
+                    :key="`${filter.min}-${filter.max}`"
                     v-model="internalValue"
                     :min="filter.min"
                     :max="filter.max"
@@ -23,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/dist-css/vue-slider-component.css'
 
@@ -41,6 +42,16 @@ const { price } = usePrice()
 const internalValue = ref<number[]>(props.value)
 let timer: any = null
 let timerActive = false
+let isMounted = false
+
+onMounted(() => { isMounted = true })
+
+watch(() => [props.filter?.min, props.filter?.max], ([min, max]) => {
+    if (!isMounted) return
+    clearTimeout(timer)
+    timerActive = false
+    internalValue.value = [min as number, max as number]
+})
 
 watch(() => props.value, (value) => {
     if (!timerActive) {

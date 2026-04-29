@@ -28,7 +28,7 @@
                                 <td>
                                     {{ price(order.valor_total) }}
                                     para
-                                    {{ order.products.length }}
+                                    {{ order.products?.length ?? 0 }}
                                     item(s)
                                 </td>
                             </tr>

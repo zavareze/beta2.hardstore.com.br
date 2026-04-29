@@ -16,10 +16,12 @@
                         @closeSidebar="sidebarIsOpen = false"
                     >
                         <CategorySidebarItem>
-                            <WidgetFilters title="Filtros" :offcanvas="offcanvas" style="background-color: rgba(255, 255, 255, 0.9);" />
+                            <ClientOnly>
+                                <WidgetFilters title="Filtros" :offcanvas="offcanvas" style="background-color: rgba(255, 255, 255, 0.9);" />
+                            </ClientOnly>
                         </CategorySidebarItem>
                         <CategorySidebarItem v-if="offcanvas !== 'always'" class="d-none d-lg-block">
-                            <WidgetProducts title="Visualizados Recentemente" :products="shopStore.lastViewed" />
+                            <WidgetProducts title="Visualizados Recentemente" :products="isMounted ? shopStore.lastViewed : []" />
                         </CategorySidebarItem>
                     </CategorySidebar>
                 </template>
@@ -71,6 +73,7 @@ const shopStore = useShopStore()
 
 const sidebarIsOpen = ref<boolean>(false)
 const latestProducts = ref<IProduct[]>([])
+const isMounted = ref(false)
 
 const isLoading = computed(() => shopStore.isLoading)
 const category = computed<ICategory | null>(() => shopStore.category)
@@ -133,6 +136,7 @@ watch(query, (q: string) => {
 })
 
 onMounted(() => {
+    isMounted.value = true
     if (offcanvas.value === 'mobile') {
         shopApi.getLatestProducts({ limit: 5 }).then((result) => {
             latestProducts.value = result

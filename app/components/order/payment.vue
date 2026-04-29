@@ -27,7 +27,7 @@
                             :src="magic_link"></iframe>
                     </div>
                     <div v-show="order.forma_pagamento === 1 && order.emv && !pixExpirado">
-                        <qrcode-vue class="text-center" :value="order.emv" size="200" level="L" render-as="canvas" />
+                        <qrcode-vue class="text-center" :value="order.emv" :size="200" level="L" render-as="canvas" />
                         <div class="mx-auto">
                             <button type="button" class="btn-primary btn-xl mt-2" @click="copiarPixClipboard()">
                                 Pix Copia e Cola

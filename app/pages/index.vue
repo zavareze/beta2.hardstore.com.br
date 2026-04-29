@@ -148,37 +148,48 @@ async function loadColumns () {
 
 useHead({ title: '' })
 
-await useAsyncData('homeCategories', async () => {
-    await shop.fetchCategory({ categorySlug: null })
-    return true
-})
-
-const { data: homeVideos } = await useAsyncData('homeVideos', () =>
-    shopApi.getVideoList()
-)
-
-const { data: featuredProducts } = await useAsyncData('featuredProducts', () =>
-    shopApi.getFeaturedProducts({ limit: 8 })
-)
-const { data: featuredProductsComputadores } = await useAsyncData('featuredProductsComputadores', () =>
-    shopApi.getFeaturedProducts({ limit: 8, category: 'computadores' })
-)
-const { data: featuredProductsPromo } = await useAsyncData('featuredProductsPromo', () =>
-    shopApi.getFeaturedProducts({ limit: 8, category: 'promocao' })
-)
-const { data: featuredProductsPCGamer } = await useAsyncData('featuredProductsPCGamer', () =>
-    shopApi.getFeaturedProducts({ limit: 8, category: 'pc-gamer' })
-)
-const { data: featuredProductsNotebooks } = await useAsyncData('featuredProductsNotebooks', () =>
-    shopApi.getFeaturedProducts({ limit: 8, category: 'notebooks' })
-)
-const { data: bestsellers } = await useAsyncData('bestsellers', () =>
-    shopApi.getPopularProducts({ limit: 7 })
-)
-const { data: latestProducts } = await useAsyncData('latestProducts', () =>
-    shopApi.getLatestProducts({ limit: 8 })
-)
-const { data: columns } = await useAsyncData('columns', () => loadColumns())
+const [
+    ,
+    { data: homeVideos },
+    { data: featuredProducts },
+    { data: featuredProductsComputadores },
+    { data: featuredProductsPromo },
+    { data: featuredProductsPCGamer },
+    { data: featuredProductsNotebooks },
+    { data: bestsellers },
+    { data: latestProducts },
+    { data: columns }
+] = await Promise.all([
+    useAsyncData('homeCategories', async () => {
+        await shop.fetchCategory({ categorySlug: null })
+        return true
+    }),
+    useAsyncData('homeVideos', () =>
+        shopApi.getVideoList()
+    ),
+    useAsyncData('featuredProducts', () =>
+        shopApi.getFeaturedProducts({ limit: 8 })
+    ),
+    useAsyncData('featuredProductsComputadores', () =>
+        shopApi.getFeaturedProducts({ limit: 8, category: 'computadores' })
+    ),
+    useAsyncData('featuredProductsPromo', () =>
+        shopApi.getFeaturedProducts({ limit: 8, category: 'promocao' })
+    ),
+    useAsyncData('featuredProductsPCGamer', () =>
+        shopApi.getFeaturedProducts({ limit: 8, category: 'pc-gamer' })
+    ),
+    useAsyncData('featuredProductsNotebooks', () =>
+        shopApi.getFeaturedProducts({ limit: 8, category: 'notebooks' })
+    ),
+    useAsyncData('bestsellers', () =>
+        shopApi.getPopularProducts({ limit: 7 })
+    ),
+    useAsyncData('latestProducts', () =>
+        shopApi.getLatestProducts({ limit: 8 })
+    ),
+    useAsyncData('columns', () => loadColumns())
+])
 
 const videoPosts = computed(() => {
     return Array.isArray(homeVideos.value?.data?.videos)

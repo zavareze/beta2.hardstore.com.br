@@ -7,7 +7,7 @@
             Assine nossa newsletter e receba semanalmente nossas novidades e promoções exclusivas!
         </div>
         <form class="widget-newsletter__form" action="">
-            <label for="widget-newsletter-email" class="sr-only">Seu Email...</label>
+            <label for="widget-newsletter-email" class="sr-only"></label>
             <input id="widget-newsletter-email" type="text" class="form-control" placeholder="Seu Email..." v-model="email">
             <button type="button" class="btn btn-primary mt-3" @click.prevent="addNewsletter()">
                 Assinar

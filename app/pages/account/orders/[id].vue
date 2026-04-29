@@ -81,16 +81,16 @@ const { price } = usePrice()
 useHead({ title: 'Detalhes Pedido' })
 
 await useAsyncData('orderDetails', async () => {
-    account.fetchOrder({})
-    await account.selectedOrder({ id: route.params.id })
-    if (account.selectedOrder && account.selectedOrder.magic_link != '')
+    if (!account.orders.length) await account.fetchOrders(999)
+    account.selectOrder(Number(route.params.id as string))
+    if (account.selectedOrder?.magic_link)
         await account.getOrder(account.selectedOrder.magic_link)
     return true
 })
 
 const order2 = computed(() => account.order)
 const pixExpirado = ref(false)
-const order = ref(Object.assign({}, account.selectedOrder))
+const order = computed(() => account.selectedOrder)
 
 onBeforeMount(() => {
     if (!account.user.document)

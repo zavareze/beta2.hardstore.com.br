@@ -68,9 +68,7 @@ const messageType = ref<'success' | 'danger'>('success')
 const defaultLoading = ref<string | null>(null)
 
 function isDefaultAddress(address: any) {
-    const addressDefault = address.default === true || String(address.default) === '1'
-
-    return addressDefault || String(address.id) === String(account.user.padrao || '')
+    return account.isDefaultAddress(address)
 }
 
 async function setDefaultAddress(address: any) {
@@ -80,16 +78,7 @@ async function setDefaultAddress(address: any) {
     defaultLoading.value = String(address.id)
 
     try {
-        await account.setUser({
-            ...account.user,
-            padrao: address.id,
-            nova_senha: '',
-            confirme_senha: ''
-        })
-        account.user = {
-            ...account.user,
-            padrao: address.id
-        }
+        await account.setDefaultAddress(address)
         messageType.value = 'success'
         message.value = 'Endereço padrão atualizado com sucesso.'
     } catch (error: any) {

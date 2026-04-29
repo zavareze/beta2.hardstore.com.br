@@ -93,6 +93,11 @@ onMounted(async () => {
     if (accountStore.logged && accountStore.token && accountStore.addresses.length === 0) {
         await accountStore.getAddresses()
     }
+    const defaultAddress = accountStore.getDefaultAddress()
+    if (defaultAddress?.cep) {
+        selectedAddressId.value = String(defaultAddress.id)
+        cep.value.cep = formatCep(defaultAddress.cep)
+    }
     calculaFrete()
 })
 
@@ -148,9 +153,7 @@ function formatCep(value: string | number) {
 }
 
 function isDefaultAddress(address: any) {
-    return address.default === true ||
-        String(address.default) === '1' ||
-        String(address.id) === String(accountStore.user.padrao || '')
+    return accountStore.isDefaultAddress(address)
 }
 
 function setShipping() {

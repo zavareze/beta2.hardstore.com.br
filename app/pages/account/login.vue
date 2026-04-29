@@ -30,6 +30,7 @@
                                                 placeholder="CPF ou E-mail"
                                                 autocomplete="username"
                                                 required
+                                                @input="formatUserInput"
                                             >
                                             <label for="login-email">CPF ou E-mail</label>
                                         </div>
@@ -164,6 +165,25 @@ onMounted(() => {
 
 function change () {
     account.setError('')
+}
+
+function formatUserInput () {
+    if (!/^\d[\d.\-\/]*$/.test(user.value)) return
+    const digits = user.value.replace(/\D/g, '')
+    if (digits.length > 11) {
+        const d = digits.slice(0, 14)
+        if (d.length > 12) user.value = `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`
+        else if (d.length > 8) user.value = `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`
+        else if (d.length > 5) user.value = `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`
+        else if (d.length > 2) user.value = `${d.slice(0, 2)}.${d.slice(2)}`
+        else user.value = d
+    } else {
+        const d = digits.slice(0, 11)
+        if (d.length > 9) user.value = `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        else if (d.length > 6) user.value = `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+        else if (d.length > 3) user.value = `${d.slice(0, 3)}.${d.slice(3)}`
+        else user.value = d
+    }
 }
 
 function registrar () {
