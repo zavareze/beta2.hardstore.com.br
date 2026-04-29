@@ -21,13 +21,13 @@ import { useShopStore } from '~/stores/shop'
 import type { SwiperOptions } from 'swiper/types'
 
 const carouselOptions: SwiperOptions = {
+    grabCursor: true,
+    loop: true,
     autoplay: {
-        delay: 1000
+        delay: 1000,
+        disableOnInteraction: false
     },
-    speed: 550,
-    pagination: {
-        clickable: true
-    },
+    speed: 300,
     roundLengths: true,
     slidesPerView: 2,
     breakpoints: {

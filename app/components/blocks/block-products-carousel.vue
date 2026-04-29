@@ -58,14 +58,12 @@ function buildColumns(rows: number, products: any[]): any[][] {
 }
 
 const carouselOptionsBase: SwiperOptions = {
+    grabCursor: true,
     autoplay: {
         delay: 5000,
         disableOnInteraction: false
     },
     speed: 300,
-    pagination: {
-        clickable: true
-    },
     roundLengths: true
 }
 const carouselOptionsByLayout: Record<string, SwiperOptions> = {

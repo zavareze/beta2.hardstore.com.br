@@ -2,34 +2,26 @@
     <!-- .block-slideshow -->
     <div
         ref="el"
-        :class="[
-            'block-slideshow',
-            `block-slideshow--layout--${layout}`,
-            'block'
-        ]"
+        :class="['block-slideshow', `block-slideshow--layout--${layout}`, 'block']"
     >
         <div class="container">
             <div class="row">
                 <div v-if="layout === 'with-departments'" class="col-lg-3 d-none d-lg-block" />
-                <div
-                    :class="[
-                        'col-12',
-                        {'col-lg-9': layout === 'with-departments'}
-                    ]"
-                >
+                <div :class="['col-12', { 'col-lg-9': layout === 'with-departments' }]">
                     <div class="block-slideshow__body">
                         <Carousel :options="{
+                            grabCursor: true,
+                            loop: true,
                             autoplay: {
                                 delay: 5000,
                                 disableOnInteraction: false,
-                                pauseOnMouseEnter: true
+                                pauseOnMouseEnter: true,
                             },
-                            loop: slides.length > 1,
                             pagination: {
-                                clickable: true
+                                type: 'progressbar',
                             },
-                            speed: 650,
-                            roundLengths: true
+                            speed: 600,
+                            roundLengths: true,
                         }">
                             <CarouselSlide v-for="(slide, index) in slides" :key="index">
                                 <AppLink class="block-slideshow__slide" :to="slide.url">
@@ -41,15 +33,6 @@
                                         class="block-slideshow__slide-image block-slideshow__slide-image--mobile"
                                         :style="{ backgroundImage: getMobileImage(slide) }"
                                     />
-                                    <div class="block-slideshow__slide-content">
-                                        <!-- eslint-disable-next-line vue/no-v-html -->
-                                        <div class="block-slideshow__slide-title" :style="{ 'color': slide.colorTitle }" v-html="slide.title" />
-                                        <!-- eslint-disable-next-line vue/no-v-html -->
-                                        <div class="block-slideshow__slide-text" :style="{ 'color': slide.colorText }" v-html="slide.text" />
-                                        <div class="block-slideshow__slide-button">
-                                        <span class="btn btn-primary btn-lg">Compre Agora</span>
-                                        </div>
-                                    </div>
                                 </AppLink>
                             </CarouselSlide>
                         </Carousel>
@@ -65,7 +48,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import departments from '~/services/departments'
 
-type BlockSlideshowLayout = 'full' | 'with-departments';
+type BlockSlideshowLayout = 'full' | 'with-departments'
 
 interface Slide {
     title: string
@@ -89,32 +72,28 @@ const el = ref<HTMLElement | null>(null)
 
 const slides: Slide[] = [
     {
-        title: ' ',
-        text: ' ',
+        title: ' ', text: ' ',
         imageClassic: '/images/banners/banner-promo-natal.png',
         imageFull: '/images/banners/banner-promo-natal.png',
         imageMobile: '',
         url: '/shop/promocao?sort=recents_desc'
     },
     {
-        title: ' ',
-        text: ' ',
+        title: ' ', text: ' ',
         imageClassic: '/images/banners/banner-promo-roku.png',
         imageFull: '/images/banners/banner-promo-roku.png',
         imageMobile: '',
         url: `${url.catalog()}?filter_search=roku`
     },
     {
-        title: ' ',
-        text: ' ',
+        title: ' ', text: ' ',
         imageClassic: '/images/banners/baly.png',
         imageFull: '/images/banners/baly.png',
         imageMobile: '',
         url: `${url.catalog()}?filter_search=redragon`
     },
     {
-        title: ' ',
-        text: ' ',
+        title: ' ', text: ' ',
         imageClassic: '/images/banners/manu.jpeg',
         imageFull: '/images/banners/manu.jpeg',
         imageMobile: '',
@@ -122,18 +101,11 @@ const slides: Slide[] = [
     },
 ]
 
-onMounted(() => {
-    if (el.value) {
-        departments.set(el.value)
-    }
-})
-
-onBeforeUnmount(() => {
-    departments.set(null)
-})
+onMounted(() => { if (el.value) departments.set(el.value) })
+onBeforeUnmount(() => { departments.set(null) })
 
 function getDesktopImage(slide: Slide): string {
-    const imgUrl = (props.layout === 'with-departments' ? slide.imageClassic : slide.imageFull)
+    const imgUrl = props.layout === 'with-departments' ? slide.imageClassic : slide.imageFull
     return `url(${url.img(imgUrl)})`
 }
 

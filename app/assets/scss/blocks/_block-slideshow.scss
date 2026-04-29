@@ -16,20 +16,19 @@ $local-dot-size: $local-dots-height - $local-dots-padding * 2;
     margin-bottom: $block-margin-bottom;
     position: relative;
 
-    .swiper-pagination {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        bottom: 16px;
-        width: auto;
-        background: $block-slideshow-dots-bg;
-        padding: $local-dots-padding;
-        border-radius: $local-dots-height / 2;
+    .swiper-wrapper {
+        will-change: transform;
+        --swiper-wrapper-transition-timing-function: ease-in-out;
+    }
 
-        @include direction {
-            #{$inset-inline-start}: 50%;
-            #{$inset-inline-end}: auto;
-            transform: translateX(#{-50% * $transform-direction});
+    .swiper-pagination-progressbar {
+        height: 4px;
+        top: auto;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.25);
+
+        .swiper-pagination-progressbar-fill {
+            background: #fff;
         }
     }
     .swiper-pagination-bullet {

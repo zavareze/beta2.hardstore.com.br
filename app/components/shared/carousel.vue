@@ -11,7 +11,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
-
+import { Swiper } from 'swiper'
+import { Pagination, Autoplay, Navigation } from 'swiper/modules'
 
 const props = withDefaults(defineProps<{
     options?: Record<string, any>
@@ -28,11 +29,6 @@ onMounted(async () => {
     await nextTick()
     const el = containerRef.value
     if (!el) return
-
-    const { Swiper } = await import('swiper')
-    const { Pagination, Autoplay, Navigation } = await import('swiper/modules')
-
-    if (!containerRef.value) return
 
     const modules = []
     if (hasPagination.value) modules.push(Pagination)
