@@ -16,49 +16,13 @@ $local-dot-size: $local-dots-height - $local-dots-padding * 2;
     margin-bottom: $block-margin-bottom;
     position: relative;
 
-    .swiper-wrapper {
-        will-change: transform;
-        --swiper-wrapper-transition-timing-function: ease-in-out;
-    }
-
-    .swiper-pagination-progressbar {
-        height: 4px;
-        top: auto;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.25);
-
-        .swiper-pagination-progressbar-fill {
-            background: #fff;
-        }
-    }
-    .swiper-pagination-bullet {
-        width: $local-dot-size;
-        height: $local-dot-size;
-        border-radius: $local-dot-size / 2;
-        background: $block-slideshow-dot-default-color;
-        opacity: 1;
-        transition: background .12s;
-
-        &:focus {
-            outline: none;
-        }
-
-        &:hover {
-            background: $block-slideshow-dot-hover-color;
-        }
-
-        &.swiper-pagination-bullet-active {
-            background: $block-slideshow-dot-active-color;
-        }
-    }
-    .swiper-horizontal > .swiper-pagination-bullets .swiper-pagination-bullet {
-        margin: 0;
-    }
-    .swiper-horizontal > .swiper-pagination-bullets .swiper-pagination-bullet + .swiper-pagination-bullet {
-        @include direction {
-            #{$margin-inline-start}: 6px;
-        }
-    }
+    --swiper-wrapper-transition-timing-function: ease-in-out;
+    --swiper-pagination-bullet-size: #{$local-dot-size};
+    --swiper-pagination-bullet-border-radius: #{$local-dot-size / 2};
+    --swiper-pagination-bullet-inactive-color: #{$block-slideshow-dot-default-color};
+    --swiper-pagination-bullet-inactive-opacity: 1;
+    --swiper-pagination-color: #{$block-slideshow-dot-active-color};
+    --swiper-pagination-bullet-horizontal-gap: 3px;
 }
 .block-slideshow__slide {
     position: relative;

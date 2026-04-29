@@ -12,16 +12,13 @@
                         <Carousel :options="{
                             grabCursor: true,
                             loop: true,
+                            pagination: { clickable: true },
                             autoplay: {
                                 delay: 5000,
                                 disableOnInteraction: false,
-                                pauseOnMouseEnter: true,
+                                pauseOnMouseEnter: false
                             },
-                            pagination: {
-                                type: 'progressbar',
-                            },
-                            speed: 600,
-                            roundLengths: true,
+                            speed: 600
                         }">
                             <CarouselSlide v-for="(slide, index) in slides" :key="index">
                                 <AppLink class="block-slideshow__slide" :to="slide.url">

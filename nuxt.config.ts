@@ -76,7 +76,7 @@ export default defineNuxtConfig({
         vue: {
             template: {
                 compilerOptions: {
-                    isCustomElement: tag => tag === 'paypal-plus'
+                    isCustomElement: tag => ['paypal-plus', 'swiper-container', 'swiper-slide'].includes(tag)
                 }
             }
         },
@@ -84,7 +84,7 @@ export default defineNuxtConfig({
             allowedHosts: ['beta2.hardstore.com.br'],
             fs: {
                 strict: false,
-                allow: ['C:/']
+                allow: ['/dominios']
             }
         },
         plugins: [

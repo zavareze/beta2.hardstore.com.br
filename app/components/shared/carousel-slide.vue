@@ -1,5 +1,5 @@
 <template>
-    <div class="swiper-slide">
+    <swiper-slide>
         <slot />
-    </div>
+    </swiper-slide>
 </template>

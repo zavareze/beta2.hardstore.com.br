@@ -29,11 +29,7 @@ const carouselOptionsBase: SwiperOptions = {
     autoplay: {
         delay: 5000
     },
-    speed: 550,
-    pagination: {
-        clickable: true
-    },
-    roundLengths: true
+    speed: 550
 }
 const carouselOptionsByLayout: Record<string, SwiperOptions> = {
     list: {
