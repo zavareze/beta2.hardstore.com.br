@@ -27,12 +27,12 @@
                                                 v-model="user"
                                                 class="form-control"
                                                 type="text"
-                                                placeholder="CPF ou E-mail"
+                                                placeholder="CPF ou CNPJ"
                                                 autocomplete="username"
                                                 required
                                                 @input="formatUserInput"
                                             >
-                                            <label for="login-email">CPF ou E-mail</label>
+                                            <label for="login-email">CPF/CNPJ</label>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -74,7 +74,7 @@
                                                     </svg>
                                                 </span>
                                             </span>
-                                            <label class="form-check-label" for="login-remember">Lembre-se</label>
+                                            <label class="form-check-label" for="login-remember">Lembrar meus dados</label>
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary mt-4">

@@ -1,28 +1,100 @@
 <template>
-    <div class="block about-us">
-        <div class="about-us__image" style="background-image: url('/images/quemsomos-2880x1507.webp')" />
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-12 col-xl-10">
-                    <div class="about-us__body">
-                        <h1 class="about-us__title">
-                            Quem Somos @2022
-                        </h1>
-                        <div class="about-us__text typography">
-            <p>Presente no mercado desde 2005, a Hardstore Informática é uma empresa que comercializa hardwares e softwares de excelente qualidade.</p>
-			<p>A matriz está situada na Avenida Goethe, n° 38, Loja 7 Porto Alegre/RS, com filial em Caxias do Sul/RS, a empresa disponibiliza também atendimento online e loja virtual. Contamos com vendedores qualificados e experientes, dispostos a esclarecer dúvidas e a prestar o melhor atendimento sempre.</p>
-			<p>Nossa missão é proporcionar a melhor experiência de compra para o cliente. Para tanto, trabalhamos com as melhores marcas disponíveis no mercado e disponibilizamos constantemente novidades e lançamentos.</p>
-			<p>Trabalhamos com diversas formas de pagamento, o que possibilita ao cliente maior liberdade de escolha para optar pela forma que melhor lhe convém.</p>
-			<p>Possuímos também um setor exclusivo de RMA (Retorno de Mercadoria Autorizada), proporcionando agilidade e qualidade no atendimento aos clientes com peças em garantia.</p>
-			<p>A Hardstore Informática entrega sua mercadoria em todo o Brasil, através de Sedex, transportadora e frete rodoviário (este último está disponível somente para entregas no Rio Grande do Sul), além do serviço de motoboy e entregas de carro. </p>
-                        </div>
-                    </div>
-                </div>
+  <div class="block about-us">
+    
+    <!-- Imagem otimizada para SEO -->
+    <img 
+      src="/images/quemsomos-2880x1507.webp"
+      alt="Hardstore Informática - Loja e equipe especializada em tecnologia"
+      class="about-us__image"
+    />
+
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+          <div class="about-us__body">
+
+            <!-- H1 principal -->
+            <h1 class="about-us__title">
+              Quem Somos
+            </h1>
+
+            <div class="about-us__text typography">
+
+              <h2>Sobre a Hardstore</h2>
+              <p>
+                Desde 2005, a <strong>Hardstore Informática</strong> conecta pessoas e empresas
+                às melhores soluções em tecnologia. Somos especialistas em hardware e software,
+                com um portfólio atualizado, curado com foco em performance, confiabilidade
+                e custo-benefício.
+              </p>
+
+              <h2>Nossa Presença</h2>
+              <p>
+                Com sede em <strong>Porto Alegre/RS</strong> e filial em
+                <strong>Caxias do Sul/RS</strong>, atuamos de forma omnichannel: unindo loja
+                física, e-commerce e atendimento online para oferecer uma experiência de compra
+                simples, rápida e segura — para todo o Brasil.
+              </p>
+
+              <h2>Atendimento Especializado</h2>
+              <p>
+                Nosso time é formado por especialistas apaixonados por tecnologia, prontos para
+                ajudar você a tomar a melhor decisão, seja para upgrades, setups completos ou
+                soluções sob medida.
+              </p>
+
+              <h2>Produtos e Marcas</h2>
+              <p>
+                Trabalhamos com as principais marcas do mercado e estamos sempre atentos aos
+                lançamentos e tendências, trazendo novidades constantes em hardware e software
+                para nossos clientes.
+              </p>
+
+              <h2>Formas de Pagamento</h2>
+              <p>
+                Oferecemos múltiplas formas de pagamento, garantindo flexibilidade e conveniência
+                para atender diferentes perfis de clientes.
+              </p>
+
+              <h2>Pós-venda e Garantia</h2>
+              <p>
+                Contamos com um processo de <strong>RMA</strong> ágil e eficiente, garantindo
+                suporte rápido e transparente para produtos em garantia — porque a experiência
+                do cliente não termina na compra.
+              </p>
+
+              <h2>Entrega em Todo o Brasil</h2>
+              <p>
+                Realizamos entregas em todo o Brasil via transportadoras e Sedex. No Rio Grande
+                do Sul, oferecemos ainda opções de entrega rápida com frota própria e motoboy,
+                garantindo agilidade e segurança.
+              </p>
+
+              <p>
+                Mais do que vender tecnologia, queremos facilitar escolhas e entregar
+                <strong>performance, confiança e praticidade</strong> em cada pedido.
+              </p>
+
             </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Quem Somos' })
+useHead({
+  title: 'Quem Somos | Hardstore Informática',
+  meta: [
+    {
+      name: 'description',
+      content: 'Conheça a Hardstore Informática. Desde 2005 oferecendo hardware, software e tecnologia com qualidade, entrega rápida e atendimento especializado em todo o Brasil.'
+    },
+    {
+      name: 'keywords',
+      content: 'hardstore, informática, hardware, software, loja de informática, tecnologia, Porto Alegre, e-commerce tecnologia'
+    }
+  ]
+})
 </script>

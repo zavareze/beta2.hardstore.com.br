@@ -220,11 +220,23 @@ const filtersCount = computed(() => {
     return Object.keys(filters.value).map(x => filters.value[x]).filter(x => x).length
 })
 
+const SIX_COLUMN_SLUGS = ['pc-gamer', 'home-office', 'promocao']
+const route = useRoute()
+
 onMounted(() => {
     const storedGrid = window.localStorage.getItem(GRID_STORAGE_KEY)
 
+    const slug = route.params.slug as string
+    const isSixColumnSlug = SIX_COLUMN_SLUGS.includes(slug)
+
     if (storedGrid && isProductsViewGrid(storedGrid)) {
         selectedGrid.value = storedGrid
+    } else if (isSixColumnSlug) {
+        selectedGrid.value = 'grid-6-full'
+    }
+
+    if (isSixColumnSlug) {
+        shopStore.setLayout('grid')
     }
 
     isMounted.value = true
