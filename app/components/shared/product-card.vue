@@ -10,7 +10,7 @@
             }
         ]"
     >
-        <AsyncAction v-slot:default="{ run, isLoading }" :action="() => quickviewStore.open({ productSlug: product.slug })">
+        <AsyncAction v-slot:default="{ run, isLoading }" :action="() => quickviewStore.openProduct(product.slug)">
             <button
                 type="button"
                 :class="[

@@ -10,7 +10,8 @@
 .block-products-carousel {
     pointer-events: none;
 
-    .swiper {
+    .swiper,
+    swiper-container {
         padding-bottom: 100px;
         margin-bottom: -100px;
         pointer-events: auto;
@@ -18,7 +19,8 @@
     .swiper-wrapper {
         align-items: stretch;
     }
-    .swiper-slide {
+    .swiper-slide,
+    swiper-slide {
         display: flex;
         flex-direction: column;
         height: auto;
