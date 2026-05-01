@@ -39,7 +39,7 @@ export const useShopStore = defineStore('shop', {
         } as any,
         layout: 'list',
         orderBy: 'recents_desc',
-        show: 24,
+        show: 36,
         lastViewed: [] as any[],
         maxDiscount: 15
     }),
@@ -50,6 +50,7 @@ export const useShopStore = defineStore('shop', {
     actions: {
         async init(payload: { categorySlug: string | null; options: IListOptions; filters: IFilterValues }) {
             this.options.sort = payload.options.sort || 'recents_desc'
+            this.options.limit = payload.options.limit || 36
             this.options.page = 1
             this.orderBy = this.options.sort
             this.categorySlug = payload.categorySlug
@@ -188,6 +189,6 @@ export const useShopStore = defineStore('shop', {
     },
     persist: {
         storage: piniaPluginPersistedstate.localStorage,
-        pick: ['categoryList', 'brands', 'lastViewed']
+        pick: ['brands', 'lastViewed']
     }
 })

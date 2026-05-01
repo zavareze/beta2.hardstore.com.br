@@ -22,7 +22,7 @@
                                     Este é um serviço de caráter exclusivamente informativo.
                                     Não possui efeito legal, podendo sofrer alterações sem prévio aviso.
                                 </p>
-                                <form>
+                                <form @submit.prevent="trackOrder">
                                     <div class="form-group">
                                         <label for="track-order-id">CPF/CNPJ</label>
                                         <input
@@ -30,6 +30,9 @@
                                             class="form-control"
                                             type="text"
                                             v-model="user.document"
+                                            autocomplete="username"
+                                            required
+                                            @input="formatDocument"
                                         >
                                     </div>
                                     <div class="form-group">
@@ -39,10 +42,12 @@
                                             class="form-control"
                                             type="email"
                                             v-model="user.email"
+                                            autocomplete="email"
+                                            required
                                         >
                                     </div>
                                     <div class="pt-3">
-                                        <button type="button" class="btn btn-primary btn-lg btn-block" @click="trackOrder()">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block">
                                             Rastrear
                                         </button>
                                     </div>
@@ -80,5 +85,31 @@ function trackOrder () {
                 duration: 5000
             })
         })
+}
+
+function formatDocument () {
+    const digits = user.value.document.replace(/\D/g, '')
+
+    if (digits.length > 11) {
+        user.value.document = formatCnpj(digits.slice(0, 14))
+        return
+    }
+
+    user.value.document = formatCpf(digits.slice(0, 11))
+}
+
+function formatCpf (digits: string) {
+    if (digits.length > 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+    if (digits.length > 6) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+    if (digits.length > 3) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+    return digits
+}
+
+function formatCnpj (digits: string) {
+    if (digits.length > 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`
+    if (digits.length > 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
+    if (digits.length > 5) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
+    if (digits.length > 2) return `${digits.slice(0, 2)}.${digits.slice(2)}`
+    return digits
 }
 </script>

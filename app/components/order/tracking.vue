@@ -9,8 +9,8 @@
                     </div>
                     <div v-for="(rastreio, kk) in rastreios" :key="kk" class="order-list text-center mt-4">
                         <h2>{{rastreio.descricao}}</h2>
-                        <div v-show="rastreio && rastreio.historico[0]">
-                            <img :src="'https://api.hardstore.com.br/images/correios/'+(rastreio.historico[0].img | 8)+'.gif'"><br />
+                        <div v-if="rastreio && rastreio.historico && rastreio.historico[0]">
+                            <img :src="'https://api.hardstore.com.br/images/correios/'+(rastreio.historico[0].img || 8)+'.gif'"><br />
                             <b>{{rastreio.historico[0].descricao}}</b><br />
                             <label style="font-size: 12px">{{rastreio.historico[0].comentario}}</label><br />
                             {{rastreio.historico[0].data.split('-').reverse().join('/')}} {{rastreio.historico[0].hora.substr(0, 5)}} {{rastreio.historico[0].cidade}} / {{rastreio.historico[0].uf}}

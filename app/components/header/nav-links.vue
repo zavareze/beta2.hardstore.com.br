@@ -84,7 +84,7 @@ const items = ref([
     },
     {
         title: 'PC Gamer',
-        url: '/shop/pc-gamer'
+        url: '/computadores/pc-gamer'
     },
     {
         title: 'Ofertas Especiais',

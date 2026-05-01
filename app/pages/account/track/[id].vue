@@ -11,7 +11,13 @@
                     <br />
                 </div>
                 <br />
-                <Tracking />
+                <div v-if="trackingError" class="alert alert-danger">
+                    {{ trackingError }}
+                </div>
+                <div v-else-if="!rastreios.length" class="alert alert-info">
+                    Nenhum rastreamento encontrado para este pedido.
+                </div>
+                <Tracking v-else :rastreios="rastreios" />
             </div>
         </div>
     </div>
@@ -22,12 +28,20 @@ import { useAccountStore } from '~/stores/account'
 
 const account = useAccountStore()
 const route = useRoute()
+const rastreios = computed(() => account.order?.rastreios || [])
+const trackingError = ref('')
 
 useHead({ title: 'Rastreamento de Pedido' })
 
 await useAsyncData('tracking', async () => {
-    if (route.params.id)
-        await account.getTracking(route.params.id as string)
+    try {
+        if (route.params.id) {
+            await account.getTracking(route.params.id as string)
+        }
+    } catch (error: any) {
+        trackingError.value = error?.response?.data?.message || error?.message || 'Não foi possível localizar o rastreamento deste pedido.'
+    }
+
     return true
 })
 </script>

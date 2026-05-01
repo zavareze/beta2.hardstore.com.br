@@ -1,4 +1,5 @@
 import { defineEventHandler, getQuery } from 'h3'
+import { readFile } from 'node:fs/promises'
 import { fetchHardstoreJson } from '../utils/hardstore-upstream'
 
 const productCollections = {
@@ -8,6 +9,8 @@ const productCollections = {
     discount: '/api/produtos/discount',
     topRated: '/api/produtos/novidades'
 } as const
+
+const LOCAL_CATEGORIES_FILE = '/dominios/api.hardstore.com.br/www/servless/categorias.json'
 
 function getSingleQueryValue(value: unknown) {
     if (Array.isArray(value)) {
@@ -49,6 +52,13 @@ function emptyVideosResponse() {
     }
 }
 
+async function readLocalCategories() {
+    const contents = await readFile(LOCAL_CATEGORIES_FILE, 'utf8')
+    const categories = JSON.parse(contents)
+
+    return Array.isArray(categories) ? categories : []
+}
+
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const resource = getSingleQueryValue(query.resource)
@@ -62,7 +72,22 @@ export default defineEventHandler(async (event) => {
     }
 
     if (resource === 'categories') {
-        return await fetchHardstoreJson('storefront:categories', '/servless/categorias.json', () => [])
+        try {
+            return await readLocalCategories()
+        } catch (error: any) {
+            console.error('[storefront] local categories read failed', {
+                path: LOCAL_CATEGORIES_FILE,
+                message: error?.message || 'Unknown file read error'
+            })
+
+            const response = await fetchHardstoreJson<any>(
+                'storefront:categories',
+                'https://sistemaci3.hardstore.com.br/api/servless/categorias/0',
+                () => []
+            )
+
+            return Array.isArray(response?.data) ? response.data : response
+        }
     }
 
     if (resource === 'products') {

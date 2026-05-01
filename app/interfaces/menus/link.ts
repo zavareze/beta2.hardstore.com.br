@@ -4,6 +4,7 @@ export interface ILink {
     props?: {
         target?: '_blank';
     };
+    hidden?: boolean;
 }
 
 export interface INestedLink extends ILink {

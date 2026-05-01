@@ -5,11 +5,11 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <template v-for="(item, index) in breadcrumb" :key="index">
-                            <li v-if="index !== breadcrumb.length - 1" class="breadcrumb-item">
+                            <li v-if="!item.hidden && index !== breadcrumb.length - 1" class="breadcrumb-item">
                                 <AppLink :to="item.url">{{ item.title }}</AppLink>
                                 <span class="breadcrumb-arrow">›</span>
                             </li>
-                            <li v-else class="breadcrumb-item active">{{ item.title }}</li>
+                            <li v-else-if="!item.hidden" class="breadcrumb-item active">{{ item.title }}</li>
                         </template>
                     </ol>
                 </nav>

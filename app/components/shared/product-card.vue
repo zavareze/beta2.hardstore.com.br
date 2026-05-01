@@ -37,21 +37,25 @@
         <div v-if="product.images && product.images.length > 0" class="product-card__image product-image">
             <AppLink :to="url.product(product)" class="product-image__body">
                 <!--suppress HtmlUnknownTarget --><!-- 1280x960 213x160 350x263 -->
-                <img class="product-image__img" loading="lazy"
-                :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/350x263/' + product.images[0] + '.webp'" alt="">
+                <img class="product-image__img"
+                :loading="(index ?? 0) === 0 ? 'eager' : 'lazy'"
+                :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/350x263/' + product.images[0] + '.webp'"
+                :alt="product.name"
+                width="350"
+                height="263">
                 <img v-if="product.badge_promo" class="black-img" src="/images/black-friday.png" alt="" />
             </AppLink>
             <div style="text-align: center">
-                <img alt="" height="40" style="max-height: 40px;max-width: 100px; height: auto"
+                <img :alt="product.vendor" height="40" style="max-height: 40px;max-width: 100px; height: auto"
                 :src="'https://static.hardstore.com.br/images/fabricantes/'+product.vendor+'.webp'">
             </div>
         </div>
         <div class="product-card__info">
-            <div class="product-card__name">
+            <h2 class="product-card__name">
                 <AppLink :to="url.product(product)">
                     {{ product.name }}
                 </AppLink>
-            </div>
+            </h2>
             <div class="product-card__rating">
                 <Rating class="product-card__rating-stars" :value="product.rating" />
                 <div class=" product-card__rating-legend">
@@ -168,6 +172,7 @@ export type ProductCardLayout = 'grid-sm' | 'grid-nl' | 'grid-lg' | 'list' | 'ho
 const props = defineProps<{
     product: any
     layout?: ProductCardLayout
+    index?: number
 }>()
 
 const url = useUrl()

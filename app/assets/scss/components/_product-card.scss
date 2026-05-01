@@ -119,6 +119,9 @@
 .product-card__name {
     font-size: 15px;
     line-height: 19px;
+    font-weight: inherit;
+    margin: 0;
+    padding: 0;
 
     a {
         color: inherit;

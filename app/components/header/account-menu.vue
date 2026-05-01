@@ -6,7 +6,15 @@
                 Minha Conta
             </div>
             <div class="form-group">
-                <input id="header-signin-email" v-model="user" type="text" placeholder="Email ou CPF/CNPJ" class="form-control" />
+                <input
+                    id="header-signin-email"
+                    v-model="user"
+                    type="text"
+                    placeholder="Email ou CPF/CNPJ"
+                    class="form-control"
+                    autocomplete="username"
+                    @input="formatUserInput"
+                />
             </div>
             <div class="form-group">
                 <div class="account-menu__form-forgot">
@@ -19,7 +27,7 @@
                         :class="{ 'is-invalid': accountStore.hasError }"
                         @keyup="change()"
                     />
-                    <a @click="showForgotModal = true" class="account-menu__form-forgot-link">Esqueceu?</a>
+                    <a href="#" @click.prevent="useModal().show('modalForgotPassword')" class="account-menu__form-forgot-link">Esqueceu?</a>
                     <div class="invalid-feedback">
                         {{ accountStore.hasError }}
                     </div>
@@ -99,10 +107,37 @@ onMounted(() => { isMounted.value = true })
 
 const user = ref('')
 const password = ref('')
-const showForgotModal = ref(false)
-
 function change() {
     accountStore.error = ''
+}
+
+function formatUserInput () {
+    if (!/^\d[\d.\-\/]*$/.test(user.value)) return
+
+    const digits = user.value.replace(/\D/g, '')
+    if (digits.length > 11) {
+        const d = digits.slice(0, 14)
+        user.value = formatCnpj(d)
+        return
+    }
+
+    const d = digits.slice(0, 11)
+    user.value = formatCpf(d)
+}
+
+function formatCpf (digits: string) {
+    if (digits.length > 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+    if (digits.length > 6) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+    if (digits.length > 3) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+    return digits
+}
+
+function formatCnpj (digits: string) {
+    if (digits.length > 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`
+    if (digits.length > 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
+    if (digits.length > 5) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
+    if (digits.length > 2) return `${digits.slice(0, 2)}.${digits.slice(2)}`
+    return digits
 }
 
 function logout() {

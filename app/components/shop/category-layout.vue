@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-export type CategoryLayoutColumns = 3 | 4 | 5;
+export type CategoryLayoutColumns = 3 | 4 | 5 | 6;
 export type CategoryLayoutSidebarPosition = 'start' | 'end';
 
 withDefaults(defineProps<{

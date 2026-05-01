@@ -31,13 +31,12 @@
                         :layout="viewMode"
                         :grid="productsViewGrid"
                         :offcanvas="offcanvas"
+                        :sidebar-button-label="sidebarButtonLabel"
                         @openSidebar="sidebarIsOpen = true"
                     />
                 </template>
                 <template v-slot:textoSeo>
-                    <ClientOnly>
-                        <div v-if="textoSeo" class="categoria-seo" v-html="textoSeo" />
-                    </ClientOnly>
+                    <div v-if="textoSeo" ref="seoContent" class="categoria-seo" v-html="textoSeo" />
                 </template>
             </CategoryLayout>
         </template>
@@ -45,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import qs from 'query-string'
 import type { IProduct } from '~/interfaces/product'
 import type { ILink } from '~/interfaces/menus/link'
@@ -54,7 +53,7 @@ import { getCategoryParents } from '~/services/helpers'
 import shopApi from '~/api/shop'
 import { useShopStore } from '~/stores/shop'
 
-export type ShopPageCategoryColumns = 3 | 4 | 5;
+export type ShopPageCategoryColumns = 3 | 4 | 5 | 6;
 export type ShopPageCategoryViewMode = 'grid' | 'grid-with-features' | 'list';
 export type ShopPageCategorySidebarPosition = 'start' | 'end';
 
@@ -62,6 +61,8 @@ const props = withDefaults(defineProps<{
     columns?: ShopPageCategoryColumns
     viewMode?: ShopPageCategoryViewMode
     sidebarPosition?: ShopPageCategorySidebarPosition
+    breadcrumbParent?: { title: string; url: string }
+    canonicalPath?: string
 }>(), {
     columns: 3,
     viewMode: 'grid',
@@ -80,12 +81,12 @@ const category = computed<ICategory | null>(() => shopStore.category)
 const query = computed<string>(() => shopStore.query)
 
 const offcanvas = computed(() => props.columns === 3 ? 'mobile' : 'always')
+const sidebarButtonLabel = computed(() => props.columns === 6 ? 'Modo Sidebar' : 'Filtros')
 
 const productsViewGrid = computed(() => `grid-${props.columns}-${props.columns > 3 ? 'full' : 'sidebar'}`)
 
 const description = computed(() => {
-    if (category.value)
-        return category.value.meta_description
+    if (category.value) return category.value.meta_description
     return ''
 })
 
@@ -94,7 +95,67 @@ const textoSeo = computed(() => {
         return category.value.texto_seo
 })
 
+const seoContent = ref<HTMLElement | null>(null)
+
+function getCollapseTargets(trigger: HTMLElement) {
+    return (trigger.getAttribute('data-bs-target') || trigger.getAttribute('data-target') || '')
+        .split(',')
+        .map((selector) => selector.trim())
+        .filter(Boolean)
+        .map((selector) => document.querySelector<HTMLElement>(selector))
+        .filter(Boolean) as HTMLElement[]
+}
+
+function toggleCollapseElement(element: HTMLElement, trigger: HTMLElement) {
+    const isOpen = element.classList.contains('show')
+    if (isOpen) {
+        element.classList.remove('show')
+        element.style.display = 'none'
+        trigger.classList.add('collapsed')
+        trigger.setAttribute('aria-expanded', 'false')
+    } else {
+        const parentSelector = element.getAttribute('data-bs-parent') || element.getAttribute('data-parent')
+        if (parentSelector) {
+            const parent = document.querySelector<HTMLElement>(parentSelector)
+            if (parent) {
+                parent.querySelectorAll<HTMLElement>('.collapse.show').forEach((sibling) => {
+                    if (sibling !== element) {
+                        sibling.classList.remove('show')
+                        sibling.style.display = 'none'
+                        const parentTrigger = seoContent.value?.querySelector<HTMLElement>(`[data-bs-target="#${sibling.id}"],[data-target="#${sibling.id}"]`)
+                        if (parentTrigger) {
+                            parentTrigger.classList.add('collapsed')
+                            parentTrigger.setAttribute('aria-expanded', 'false')
+                        }
+                    }
+                })
+            }
+        }
+
+        element.classList.add('show')
+        element.style.display = 'block'
+        trigger.classList.remove('collapsed')
+        trigger.setAttribute('aria-expanded', 'true')
+    }
+}
+
+function handleSeoClick(event: Event) {
+    const target = event.target as HTMLElement
+    if (!target) return
+
+    const trigger = target.closest<HTMLElement>('[data-bs-toggle="collapse"], [data-toggle="collapse"]')
+    if (!trigger) return
+
+    event.preventDefault()
+    getCollapseTargets(trigger).forEach((element) => toggleCollapseElement(element, trigger))
+}
+
 const pageTitle = computed(() => {
+    if (category.value?.name) return category.value.name
+    return 'Produtos'
+})
+
+const seoTitle = computed(() => {
     if (category.value) {
         if (category.value.meta_title)
             return category.value.meta_title
@@ -104,10 +165,16 @@ const pageTitle = computed(() => {
     return 'Shop'
 })
 
+const canonicalPath = computed(() => {
+    if (props.canonicalPath) return props.canonicalPath
+    if (category.value?.slug) return `/shop/${category.value.slug}`
+    return url.catalog()
+})
+
 const breadcrumb = computed<ILink[]>(() => {
     const bread = [
         { title: 'Home', url: url.home() },
-        { title: 'Shop', url: url.catalog() }
+        { title: 'Shop', url: url.catalog(), hidden: true }
     ]
 
     if (category.value) {
@@ -115,7 +182,7 @@ const breadcrumb = computed<ILink[]>(() => {
             bread.push({ title: parent.name, url: '/shop/' + parent.slug })
         })
 
-        bread.push({ title: category.value.name, url: '/shop/' + category.value.slug })
+        bread.push({ title: category.value.name, url: canonicalPath.value })
     }
 
     return bread
@@ -142,12 +209,28 @@ onMounted(() => {
             latestProducts.value = result
         })
     }
+
+    if (seoContent.value) {
+        seoContent.value.addEventListener('click', handleSeoClick)
+    }
+})
+
+onBeforeUnmount(() => {
+    if (seoContent.value) {
+        seoContent.value.removeEventListener('click', handleSeoClick)
+    }
 })
 
 useHead(() => ({
-    title: pageTitle.value,
+    title: seoTitle.value,
+    link: [
+        { rel: 'canonical', href: `https://beta2.hardstore.com.br${canonicalPath.value}` }
+    ],
     meta: [
-        { name: 'description', content: description.value }
+        { name: 'description', content: description.value },
+        { property: 'og:title', content: seoTitle.value },
+        { property: 'og:description', content: description.value },
+        { property: 'og:url', content: `https://beta2.hardstore.com.br${canonicalPath.value}` },
     ]
 }))
 </script>

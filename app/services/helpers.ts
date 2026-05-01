@@ -58,7 +58,7 @@ export function buildQuery (options: IListOptions, filters: IFilterValues) {
         params.page = options.page
     }
 
-    if (options.limit !== 12) {
+    if (options.limit !== 36) {
         params.limit = options.limit
     }
 

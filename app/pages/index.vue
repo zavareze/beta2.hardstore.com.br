@@ -37,7 +37,7 @@
                 @groupClick="handleTabChange"
             />
         </BlockProductsCarouselContainer>
-        <BlockBanner :data="{ img: '/images/banners/pc.webp', mobile: '/images/banners/pc-mobile.webp', url: '/shop/pc-gamer'}" />
+        <BlockBanner :data="{ img: '/images/banners/pc.webp', mobile: '/images/banners/pc-mobile.webp', url: '/computadores/pc-gamer'}" />
 
         <BlockProductsCarouselContainer
             v-slot:default="{ products, isLoading, tabs, handleTabChange }"

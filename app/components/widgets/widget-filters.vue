@@ -46,6 +46,14 @@
             >
                 Limpar
             </button>
+            <button
+                v-if="showSidebarButton"
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                @click="$emit('openSidebar')"
+            >
+                Abrir sidebar
+            </button>
         </div>
     </div>
 </template>
@@ -67,9 +75,13 @@ export type WidgetFiltersOffcanvas = 'always' | 'mobile'
 
 withDefaults(defineProps<{
     offcanvas?: WidgetFiltersOffcanvas
+    showSidebarButton?: boolean
 }>(), {
     offcanvas: 'mobile',
+    showSidebarButton: false,
 })
+
+const emit = defineEmits<{ openSidebar: [] }>()
 
 const shopStore = useShopStore()
 

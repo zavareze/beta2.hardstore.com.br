@@ -14,7 +14,7 @@
         <li v-for="page in pages" :key="page" :class="['page-item', {active: page === current}]">
             <button type="button" class="page-link" @click="setPage(page)">
                 {{ page }}
-                <span v-if="page === current" class="sr-only">(current)</span>
+                <span v-if="page === current" class="sr-only">(atual)</span>
             </button>
         </li>
         <li :class="['page-item', {'disabled': current >= total}]">
