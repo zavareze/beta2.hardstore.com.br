@@ -37,7 +37,7 @@
                     <div class="view-options__filters-button">
                         <button type="button" class="filters-button" @click="emit('openSidebar')">
                             <Filters16Svg class="filters-button__icon" />
-                            <span class="filters-button__title">Filtros</span>
+                            <span class="filters-button__title">{{ props.sidebarButtonLabel }}</span>
                             <span v-if="filtersCount" class="filters-button__counter">{{ filtersCount }}</span>
                         </button>
                     </div>
@@ -137,6 +137,9 @@
                                 <option value="24">
                                     24
                                 </option>
+                                <option value="36">
+                                    36
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -151,7 +154,7 @@
             >
                 <div class="products-list__body">
                     <div v-for="(product, i) in productsList.items" :key="i" class="products-list__item">
-                        <ProductCard :product="product" />
+                        <ProductCard :product="product" :index="i" />
                     </div>
                 </div>
             </div>
@@ -189,16 +192,27 @@ const props = withDefaults(defineProps<{
     layout?: ProductsViewLayout
     grid?: ProductsViewGrid
     offcanvas?: ProductsViewOffcanvas
+    sidebarButtonLabel?: string
 }>(), {
     layout: 'grid',
     grid: 'grid-3-sidebar',
     offcanvas: 'mobile',
+    sidebarButtonLabel: 'Filtros',
 })
 
 const emit = defineEmits<{ openSidebar: [] }>()
 
 const shopStore = useShopStore()
+const route = useRoute()
 const isMounted = ref(false)
+
+const SIX_COLUMN_SLUGS = ['pc-gamer', 'computadores', 'promocao']
+const routeSlug = computed(() => {
+    const slug = route.params.slug as string | undefined
+    if (slug) return slug
+    const pathSegments = route.path.split('/').filter(Boolean)
+    return pathSegments[pathSegments.length - 1] ?? ''
+})
 const selectedGrid = ref<ProductsViewGrid>(props.grid)
 
 const productsList = computed<IProductsList>(() => shopStore.productsList)
@@ -209,7 +223,7 @@ const currentLayout = computed<ProductsViewLayout>(() => isMounted.value ? shopS
 const currentShow = computed<number>(() => {
     const limit = Number(options.value.limit)
     if (!isMounted.value) {
-        return Number.isFinite(limit) && limit > 0 ? limit : 24
+        return Number.isFinite(limit) && limit > 0 ? limit : 36
     }
 
     return shopStore.show
@@ -220,23 +234,13 @@ const filtersCount = computed(() => {
     return Object.keys(filters.value).map(x => filters.value[x]).filter(x => x).length
 })
 
-const SIX_COLUMN_SLUGS = ['pc-gamer', 'home-office', 'promocao']
-const route = useRoute()
-
 onMounted(() => {
     const storedGrid = window.localStorage.getItem(GRID_STORAGE_KEY)
 
-    const slug = route.params.slug as string
-    const isSixColumnSlug = SIX_COLUMN_SLUGS.includes(slug)
-
     if (storedGrid && isProductsViewGrid(storedGrid)) {
         selectedGrid.value = storedGrid
-    } else if (isSixColumnSlug) {
+    } else if (SIX_COLUMN_SLUGS.includes(routeSlug.value)) {
         selectedGrid.value = 'grid-6-full'
-    }
-
-    if (isSixColumnSlug) {
-        shopStore.setLayout('grid')
     }
 
     isMounted.value = true

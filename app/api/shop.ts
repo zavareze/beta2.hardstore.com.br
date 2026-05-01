@@ -64,6 +64,90 @@ function fetchStorefront<T>(query: Record<string, string | number | undefined>, 
     })
 }
 
+function findCategoryBySlug(categoryList: any[], slug: string): any {
+    for (const category of categoryList || []) {
+        if (category?.slug === slug) {
+            return category
+        }
+
+        const child = findCategoryBySlug(category?.children || [], slug)
+        if (child) {
+            return child
+        }
+    }
+
+    return null
+}
+
+function findCategoryById(categoryList: any[], id: number): any {
+    for (const category of categoryList || []) {
+        if (Number(category?.id) === Number(id)) {
+            return category
+        }
+
+        const child = findCategoryById(category?.children || [], id)
+        if (child) {
+            return child
+        }
+    }
+
+    return null
+}
+
+function getProductsListUrl(params: Record<string, unknown>) {
+    return `https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`
+}
+
+async function fetchProductsListPage(params: Record<string, unknown>): Promise<IProductsList> {
+    return fetch(getProductsListUrl(params)).then(response => response.json())
+}
+
+async function fetchProductsListWithRequestedLimit(options: any, filters: any): Promise<IProductsList> {
+    const params = { ...options, ...filters }
+    const requestedLimit = Number(options.limit)
+    const requestedPage = Number(options.page || 1)
+    const productsList = await fetchProductsListPage(params)
+    const apiLimit = Number(productsList.limit)
+
+    if (
+        !Number.isFinite(requestedLimit) ||
+        requestedLimit <= 0 ||
+        !Number.isFinite(apiLimit) ||
+        apiLimit <= 0 ||
+        requestedLimit <= apiLimit
+    ) {
+        return productsList
+    }
+
+    const offset = (requestedPage - 1) * requestedLimit
+    const firstApiPage = Math.floor(offset / apiLimit) + 1
+    const offsetWithinFirstApiPage = offset % apiLimit
+    const apiPagesToFetch = Math.ceil((offsetWithinFirstApiPage + requestedLimit) / apiLimit)
+    const pageNumbers = Array.from({ length: apiPagesToFetch }, (_, index) => firstApiPage + index)
+
+    const apiPages = await Promise.all(pageNumbers.map((page) => {
+        return page === Number(productsList.page)
+            ? productsList
+            : fetchProductsListPage({ ...params, page })
+    }))
+
+    const items = apiPages
+        .flatMap(page => page.items || [])
+        .slice(offsetWithinFirstApiPage, offsetWithinFirstApiPage + requestedLimit)
+
+    const total = Number(productsList.total) || 0
+
+    return {
+        ...productsList,
+        items,
+        page: requestedPage,
+        limit: requestedLimit,
+        pages: Math.ceil(total / requestedLimit),
+        from: total > 0 ? offset + 1 : 0,
+        to: Math.min(offset + items.length, total)
+    }
+}
+
 const shopApi = {
     getVideoList: () => {
         return fetchStorefront({ resource: 'videos' }, emptyVideoListResponse)
@@ -97,8 +181,7 @@ const shopApi = {
      * Returns category by slug.
      */
     getCategoryBySlug: (categoryList:any, slug: string, options: GetCategoryBySlugOptions = {}): Promise<IShopCategory> => {
-        // const category = shopApi.findChildren(categoryList, slug)
-        const category = categoryList.filter((x:any) => x.slug === slug)[0]
+        const category = findCategoryBySlug(categoryList, slug)
         if (category && category.pai > 0) {
             const parent = shopApi.getParent(categoryList, category.pai)
             if (parent) {
@@ -122,7 +205,10 @@ const shopApi = {
         return null
     },
     getParent: (categoryList: any, pai:number) => {
-        const category = categoryList.filter((x:any) => x.id === pai)[0]
+        const category = findCategoryById(categoryList, pai)
+        if (!category) {
+            return null
+        }
         if (category.pai > 0) {
             const parent = shopApi.getParent(categoryList, category.pai)
             category.parent = parent
@@ -131,6 +217,12 @@ const shopApi = {
     },
     getChildren: (categoryList: any, pai:number) => {
         const category = categoryList.filter((x:any) => x.pai === pai)
+        if (!category.length) {
+            const parent = findCategoryById(categoryList, pai)
+            if (parent?.children?.length) {
+                category.push(...parent.children)
+            }
+        }
         for (let i = 0; i < category.length; i++) {
             category[i].type = 'link'
             category[i].title = category[i].name
@@ -143,8 +235,7 @@ const shopApi = {
         return category
     },
     getProductsList: (options: any, filters: any): Promise<IProductsList> => {
-        const params = { ...options, ...filters }
-        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(response => response.json())
+        return fetchProductsListWithRequestedLimit(options, filters)
     },
     getProductBySlug: (slug: string): Promise<IProduct> => {
         return fetch(`https://api.hardstore.com.br/api/produto/${slug}`).then(response => response.json())
@@ -154,7 +245,7 @@ const shopApi = {
     },
     getSuggestions: (query: string, options: any): Promise<IProduct[]> => {
         const params = { ...options, search: query }
-        return fetch(`https://api.hardstore.com.br/api/produtos/search?${JSON.stringify(params)}`).then(response => response.json())
+        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => x.items || []))
     },
     getRelatedProducts: (slug: string, options: any): Promise<IProduct[]> => {
         const params = { category: slug, ...options }

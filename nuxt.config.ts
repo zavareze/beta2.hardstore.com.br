@@ -10,6 +10,11 @@ export default defineNuxtConfig({
 
     ssr: true,
 
+    routeRules: {
+        '/shop/pc-gamer': { redirect: { to: '/computadores/pc-gamer', statusCode: 301 } },
+        '/shop/catalog/pc-gamer': { redirect: { to: '/computadores/pc-gamer', statusCode: 301 } },
+    },
+
     hooks: {
         'render:html'(html) {
             const fix = (s: string) => s.replace(/\/_nuxt\/([A-Za-z]):\//g, '/@fs/$1:/')
