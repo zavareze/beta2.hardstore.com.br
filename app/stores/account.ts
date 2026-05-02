@@ -389,7 +389,14 @@ export const useAccountStore = defineStore('account', {
                 this.loading = false
             }
         },
-        createOrder: (payload: any) => accountApi.createOrder(payload),
+        async createOrder(payload: any) {
+            const result: any = await accountApi.createOrder(payload)
+            if (result.status === 200) {
+                this.order = result.data.data
+                return result.data.data
+            }
+            throw result
+        },
         createBoleto: (payload: any) => accountApi.createBoleto(payload),
         createPix: (payload: any) => accountApi.createPix(payload),
         getPix: (payload: any) => accountApi.getPix(payload),

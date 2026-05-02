@@ -26,8 +26,12 @@
                             height="500px"
                             :src="magic_link"></iframe>
                     </div>
-                    <div v-show="order.forma_pagamento === 1 && order.emv && !pixExpirado">
-                        <qrcode-vue class="text-center" :value="order.emv" :size="200" level="L" render-as="canvas" />
+                    <div v-show="order.forma_pagamento === 1 && order.emv && !pixExpirado" class="text-center">
+                        <qrcode-vue class="d-flex justify-content-center" :value="order.emv" :size="200" level="L" render-as="canvas" />
+                        <div class="alert alert-info mt-3 text-start">
+                            <strong>Chave PIX (Copia e Cola):</strong><br>
+                            <span style="word-break: break-all; font-size: 0.85rem;">{{ order.emv }}</span>
+                        </div>
                         <div class="mx-auto">
                             <button type="button" class="btn-primary btn-xl mt-2" @click="copiarPixClipboard()">
                                 Pix Copia e Cola
