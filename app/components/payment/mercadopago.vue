@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, shallowRef, onMounted } from 'vue'
 
 defineOptions({ inheritAttrs: false })
 import { useAccountStore } from '~/stores/account'
@@ -25,8 +25,9 @@ const accountStore = useAccountStore()
 const router = useRouter()
 
 const appModal = useModal()
-const mercadopago = ref<any>({})
+const mercadopago = shallowRef<any>(null)
 const loading = ref(false)
+const lastQueriedBin = ref('')
 const cartao = ref({
     nome: '',
     numero: '',
@@ -60,15 +61,25 @@ async function getIdentificationTypes() {
 }
 
 async function getPaymentMethods(cardNumber: string) {
-    const sanitizedCart = cardNumber.replace(/[^0-9,.]+/g, '')
+    const sanitizedCart = cardNumber.replace(/[^0-9]+/g, '')
+    cartao.value.numero = sanitizedCart
+    if (sanitizedCart.length < 6) {
+        lastQueriedBin.value = ''
+        cartao.value.paymentMethod = {} as any
+        return
+    }
+    const bin = sanitizedCart.substring(0, 6)
+    if (bin === lastQueriedBin.value) return
+    lastQueriedBin.value = bin
     try {
-        if (sanitizedCart.length >= 6 && !cartao.value.paymentMethod.id) {
-            const bin = sanitizedCart.substring(0, 6)
-            const paymentMethods = await mercadopago.value.getPaymentMethods({ 'bin': bin })
-            cartao.value.paymentMethod = Object.assign({}, paymentMethods.results[0])
-            cartao.value.paymentMethod.additional_info_needed.includes('issuer_id') ? getIssuers() : (() => {
-                getInstallments()
-            })()
+        const paymentMethods = await mercadopago.value.getPaymentMethods({ 'bin': bin })
+        if (!paymentMethods.results?.length) return
+        cartao.value.paymentMethod = Object.assign({}, paymentMethods.results[0])
+        const additionalInfo = cartao.value.paymentMethod.additional_info_needed
+        if (Array.isArray(additionalInfo) && additionalInfo.includes('issuer_id')) {
+            getIssuers(bin)
+        } else {
+            getInstallments(bin)
         }
     } catch (e) {
         console.error('error getting payment methods: ', e)
@@ -79,22 +90,21 @@ function changeInstallments(parcelas: number) {
     cartao.value.parcelas = parcelas
 }
 
-async function getIssuers() {
-    console.log('getIssuers()')
+async function getIssuers(bin: string) {
     try {
-        const issuers = await mercadopago.value.getIssuers({ paymentMethodId: (cartao.value.paymentMethod as any).paymentMethodID, bin: cartao.value.numero.slice(0, 6) })
-        getInstallments()
+        await mercadopago.value.getIssuers({ paymentMethodId: cartao.value.paymentMethod.id, bin })
+        getInstallments(bin)
     } catch (e) {
         console.error('error getting issuers: ', e)
     }
 }
 
-async function getInstallments() {
+async function getInstallments(bin: string) {
     const amount = cartao.value.parcelas === 1 ? props.valor1x.toString() : props.valor.toString()
     try {
         const installments = await mercadopago.value.getInstallments({
             amount,
-            bin: cartao.value.numero.slice(0, 6),
+            bin,
             paymentTypeId: 'credit_card'
         })
     } catch (e) {

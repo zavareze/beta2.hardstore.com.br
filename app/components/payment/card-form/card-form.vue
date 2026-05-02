@@ -128,7 +128,6 @@ const props = withDefaults(defineProps<{
     valor3x?: number
     btnSubmit?: boolean
     error?: string
-    formData?: any
     backgroundImage?: string | object
     randomBackgrounds?: boolean
     debito?: boolean
@@ -138,17 +137,18 @@ const props = withDefaults(defineProps<{
     valor3x: 0,
     btnSubmit: true,
     error: '',
-    formData: () => ({
-        cardName: '',
-        cardNumber: '',
-        cardNumberNotMask: '',
-        cardMonth: '',
-        cardYear: '',
-        cardCvv: '',
-        installments: 1
-    }),
     randomBackgrounds: true,
     debito: false
+})
+
+const formData = reactive({
+    cardName: '',
+    cardNumber: '',
+    cardNumberNotMask: '',
+    cardMonth: '',
+    cardYear: '',
+    cardCvv: '',
+    installments: 1
 })
 
 const emit = defineEmits<{
@@ -175,17 +175,17 @@ const fields = ref({
 
 const minCardYear = ref(new Date().getFullYear())
 const isCardNumberMasked = ref(true)
-const mainCardNumber = ref(props.formData?.cardNumber || '')
+const mainCardNumber = ref('')
 const cardNumberMaxLength = ref(19)
 
 const minCardMonth = computed(() => {
-    if (props.formData.cardYear === minCardYear.value) return new Date().getMonth() + 1
+    if (formData.cardYear === minCardYear.value) return new Date().getMonth() + 1
     return 1
 })
 
-watch(() => props.formData?.cardYear, () => {
-    if (props.formData.cardMonth < minCardMonth.value) {
-        props.formData.cardMonth = ''
+watch(() => formData.cardYear, () => {
+    if (formData.cardMonth < minCardMonth.value) {
+        formData.cardMonth = ''
     }
 })
 
@@ -198,50 +198,50 @@ function generateMonthValue(n: number) {
 }
 
 function changeName(e: Event) {
-    props.formData.cardName = (e.target as HTMLInputElement).value
-    emit('input-card-name', props.formData.cardName)
+    formData.cardName = (e.target as HTMLInputElement).value
+    emit('input-card-name', formData.cardName)
 }
 
 function changeNumber(e: Event) {
-    props.formData.cardNumber = (e.target as HTMLInputElement).value
-    const value = props.formData.cardNumber.replace(/\D/g, '')
+    formData.cardNumber = (e.target as HTMLInputElement).value
+    const value = formData.cardNumber.replace(/\D/g, '')
     if ((/^3[47]\d{0,13}$/).test(value)) {
-        props.formData.cardNumber = value.replace(/(\d{4})/, '$1 ').replace(/(\d{4}) (\d{6})/, '$1 $2 ')
+        formData.cardNumber = value.replace(/(\d{4})/, '$1 ').replace(/(\d{4}) (\d{6})/, '$1 $2 ')
         cardNumberMaxLength.value = 17
     } else if ((/^3(?:0[0-5]|[68]\d)\d{0,11}$/).test(value)) {
-        props.formData.cardNumber = value.replace(/(\d{4})/, '$1 ').replace(/(\d{4}) (\d{6})/, '$1 $2 ')
+        formData.cardNumber = value.replace(/(\d{4})/, '$1 ').replace(/(\d{4}) (\d{6})/, '$1 $2 ')
         cardNumberMaxLength.value = 16
     } else if ((/^\d{0,16}$/).test(value)) {
-        props.formData.cardNumber = value.replace(/(\d{4})/, '$1 ').replace(/(\d{4}) (\d{4})/, '$1 $2 ').replace(/(\d{4}) (\d{4}) (\d{4})/, '$1 $2 $3 ')
+        formData.cardNumber = value.replace(/(\d{4})/, '$1 ').replace(/(\d{4}) (\d{4})/, '$1 $2 ').replace(/(\d{4}) (\d{4}) (\d{4})/, '$1 $2 $3 ')
         cardNumberMaxLength.value = 19
     }
     if ((e as InputEvent).inputType == 'deleteContentBackward') {
-        const lastChar = props.formData.cardNumber.substring(props.formData.cardNumber.length, props.formData.cardNumber.length - 1)
-        if (lastChar == ' ') { props.formData.cardNumber = props.formData.cardNumber.substring(0, props.formData.cardNumber.length - 1) }
+        const lastChar = formData.cardNumber.substring(formData.cardNumber.length, formData.cardNumber.length - 1)
+        if (lastChar == ' ') { formData.cardNumber = formData.cardNumber.substring(0, formData.cardNumber.length - 1) }
     }
-    emit('input-card-number', props.formData.cardNumber)
+    emit('input-card-number', formData.cardNumber)
 }
 
 function changeMonth() {
-    emit('input-card-month', props.formData.cardMonth)
+    emit('input-card-month', formData.cardMonth)
 }
 
 function changeYear() {
-    emit('input-card-year', props.formData.cardYear)
+    emit('input-card-year', formData.cardYear)
 }
 
 function changeCvv(e: Event) {
-    props.formData.cardCvv = (e.target as HTMLInputElement).value
-    emit('input-card-cvv', props.formData.cardCvv)
+    formData.cardCvv = (e.target as HTMLInputElement).value
+    emit('input-card-cvv', formData.cardCvv)
 }
 
 function changeInstallments(e: Event) {
-    props.formData.installments = (e.target as HTMLInputElement).value
-    emit('input-card-installments', props.formData.installments)
+    formData.installments = (e.target as HTMLInputElement).value
+    emit('input-card-installments', formData.installments)
 }
 
 function invaildCard() {
-    const number = props.formData.cardNumberNotMask.replace(/ /g, '')
+    const number = formData.cardNumberNotMask.replace(/ /g, '')
     let sum = 0
     for (let i = 0; i < number.length; i++) {
         let intVal = parseInt(number.substr(i, 1))
@@ -256,7 +256,7 @@ function invaildCard() {
     if (sum % 10 !== 0) {
         alert('Número do Cartão Inválido')
     } else {
-        emit('submitCard', props.formData)
+        emit('submitCard', formData)
     }
 }
 
@@ -267,19 +267,19 @@ function blurCardNumber() {
 }
 
 function maskCardNumber() {
-    props.formData.cardNumberNotMask = props.formData.cardNumber
-    mainCardNumber.value = props.formData.cardNumber
-    const arr = props.formData.cardNumber.split('')
+    formData.cardNumberNotMask = formData.cardNumber
+    mainCardNumber.value = formData.cardNumber
+    const arr = formData.cardNumber.split('')
     arr.forEach((element: string, index: number) => {
         if (index > 4 && index < 14 && element.trim() !== '') {
             arr[index] = '*'
         }
     })
-    props.formData.cardNumber = arr.join('')
+    formData.cardNumber = arr.join('')
 }
 
 function unMaskCardNumber() {
-    props.formData.cardNumber = mainCardNumber.value
+    formData.cardNumber = mainCardNumber.value
 }
 
 function focusCardNumber() {

@@ -33,25 +33,13 @@
           </div>
         </div>
         <label :for="fields.cardNumber" class="card-item__number" :ref="fields.cardNumber">
-          <template>
-            <span v-for="(n, $index) in currentPlaceholder" :key="$index">
-              <transition name="slide-fade-up">
-                <div class="card-item__numberItem" v-if="getIsNumberMasked($index, n)">*</div>
-                <div
-                  class="card-item__numberItem"
-                  :class="{ '-active' : n.trim() === '' }"
-                  :key="currentPlaceholder"
-                  v-else-if="labels.cardNumber.length > $index"
-                >{{labels.cardNumber[$index]}}</div>
-                <div
-                  class="card-item__numberItem"
-                  :class="{ '-active' : n.trim() === '' }"
-                  v-else
-                  :key="currentPlaceholder + 1"
-                >{{n}}</div>
-              </transition>
-            </span>
-          </template>
+          <span v-for="(n, $index) in currentPlaceholder" :key="$index">
+            <div class="card-item__numberItem" :class="{ '-active' : n.trim() === '' }">
+              <template v-if="getIsNumberMasked($index, n)">*</template>
+              <template v-else-if="labels.cardNumber.length > $index">{{labels.cardNumber[$index]}}</template>
+              <template v-else>{{n}}</template>
+            </div>
+          </span>
         </label>
         <div class="card-item__content">
           <label :for="fields.cardName" class="card-item__info" :ref="fields.cardName">
@@ -136,7 +124,7 @@ const isCardFlipped = ref(false)
 const amexCardPlaceholder = '#### ###### #####'
 const dinersCardPlaceholder = '#### ###### ####'
 const defaultCardPlaceholder = '#### #### #### ####'
-const currentPlaceholder = ref('')
+const currentPlaceholder = ref(defaultCardPlaceholder)
 
 const cardType = computed(() => {
     const number = props.labels.cardNumber
