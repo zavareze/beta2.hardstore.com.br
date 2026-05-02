@@ -1056,6 +1056,7 @@ function createOrder () {
         case 1:
         case 4:
         default:
+            useModal().hide('modalLoading')
             router.push('/shop/checkout/success')
             break
         }
