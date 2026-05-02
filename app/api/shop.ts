@@ -245,7 +245,7 @@ const shopApi = {
     },
     getSuggestions: (query: string, options: any): Promise<IProduct[]> => {
         const params = { ...options, search: query }
-        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => x.items || []))
+        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => (x.items || []).slice(0, options.limit || 5)))
     },
     getRelatedProducts: (slug: string, options: any): Promise<IProduct[]> => {
         const params = { category: slug, ...options }

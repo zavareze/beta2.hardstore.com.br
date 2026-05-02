@@ -57,6 +57,18 @@
     padding: 18px;
     flex-shrink: 0;
 }
+.product-card__vendor {
+    height: 0;
+    text-align: center;
+    transform: translateY(-10px);
+
+    img {
+        display: inline-block;
+        max-height: 40px;
+        max-width: 100px;
+        height: auto;
+    }
+}
 .product-card__quickview {
     z-index: 2;
     position: absolute;
