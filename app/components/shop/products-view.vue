@@ -205,14 +205,6 @@ const emit = defineEmits<{ openSidebar: [] }>()
 const shopStore = useShopStore()
 const route = useRoute()
 const isMounted = ref(false)
-
-const SIX_COLUMN_SLUGS = ['pc-gamer', 'computadores', 'promocao']
-const routeSlug = computed(() => {
-    const slug = route.params.slug as string | undefined
-    if (slug) return slug
-    const pathSegments = route.path.split('/').filter(Boolean)
-    return pathSegments[pathSegments.length - 1] ?? ''
-})
 const selectedGrid = ref<ProductsViewGrid>(props.grid)
 
 const productsList = computed<IProductsList>(() => shopStore.productsList)
@@ -234,13 +226,30 @@ const filtersCount = computed(() => {
     return Object.keys(filters.value).map(x => filters.value[x]).filter(x => x).length
 })
 
+const SIX_COLUMN_SLUGS = ['pc-gamer', 'home-office', 'promocao']
+const routeSlug = computed(() => {
+    const slug = route.params.slug as string | undefined
+    if (slug) {
+        return slug
+    }
+
+    const pathSegments = route.path.split('/').filter(Boolean)
+    return pathSegments[pathSegments.length - 1] ?? ''
+})
+const storageKey = computed(() => routeSlug.value ? `${GRID_STORAGE_KEY}-${routeSlug.value}` : GRID_STORAGE_KEY)
+const isSixColumnSlug = computed(() => SIX_COLUMN_SLUGS.includes(routeSlug.value))
+
 onMounted(() => {
-    const storedGrid = window.localStorage.getItem(GRID_STORAGE_KEY)
+    const storedGrid = window.localStorage.getItem(storageKey.value)
 
     if (storedGrid && isProductsViewGrid(storedGrid)) {
         selectedGrid.value = storedGrid
-    } else if (SIX_COLUMN_SLUGS.includes(routeSlug.value)) {
+    } else if (isSixColumnSlug.value) {
         selectedGrid.value = 'grid-6-full'
+    }
+
+    if (isSixColumnSlug.value) {
+        shopStore.setLayout('grid')
     }
 
     isMounted.value = true
@@ -271,13 +280,13 @@ function handleViewModeClick(viewMode: ViewModeKey) {
     if (viewMode === 'grid-6') {
         shopStore.setLayout('grid')
         selectedGrid.value = 'grid-6-full'
-        window.localStorage.setItem(GRID_STORAGE_KEY, 'grid-6-full')
+        window.localStorage.setItem(storageKey.value, 'grid-6-full')
         return
     }
 
     if (viewMode === 'grid') {
         selectedGrid.value = props.grid
-        window.localStorage.setItem(GRID_STORAGE_KEY, props.grid)
+        window.localStorage.setItem(storageKey.value, props.grid)
     }
 
     shopStore.setLayout(viewMode)
