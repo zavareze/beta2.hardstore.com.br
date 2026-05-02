@@ -7,6 +7,9 @@
 @mixin product-card-list() {
     flex-direction: row;
 
+    .product-card__vendor {
+        display: none;
+    }
     .product-card__image {
         flex-shrink: 0;
         padding: 24px;
@@ -168,7 +171,7 @@
 
 @mixin product-card-grid() {
     .product-card__image {
-        padding: 18px 18px 20px;
+        padding: 18px 18px 0;
     }
     .product-card__info {
         padding: 0 24px 0;
@@ -266,7 +269,7 @@
 }
 @mixin product-card-grid-sm() {
     .product-card__image {
-        padding: 15px;
+        padding: 15px 15px 0;
     }
     .product-card__badges-list {
         top: 16px;

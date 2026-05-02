@@ -45,13 +45,13 @@
                 height="263">
                 <img v-if="product.badge_promo" class="black-img" src="/images/black-friday.png" alt="" />
             </AppLink>
-            <div v-if="product.vendor" class="product-card__vendor">
-                <img
-                    :alt="product.vendor"
-                    :src="'https://static.hardstore.com.br/images/fabricantes/'+product.vendor+'.webp'"
-                    @error="($event.target as HTMLImageElement).style.display='none'"
-                >
-            </div>
+        </div>
+        <div v-if="product.vendor" class="product-card__vendor">
+            <img
+                :alt="product.vendor"
+                :src="'https://static.hardstore.com.br/images/fabricantes/'+product.vendor+'.webp'"
+                @error="($event.target as HTMLImageElement).style.display='none'"
+            >
         </div>
         <div class="product-card__info">
             <h2 class="product-card__name">

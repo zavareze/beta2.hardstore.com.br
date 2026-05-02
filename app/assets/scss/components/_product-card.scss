@@ -54,18 +54,17 @@
     }
 }
 .product-card__image {
-    padding: 18px;
+    padding: 18px 18px 0;
     flex-shrink: 0;
 }
 .product-card__vendor {
-    height: 0;
     text-align: center;
-    transform: translateY(-10px);
+    padding: 0 18px 18px;
 
     img {
         display: inline-block;
         max-height: 40px;
-        max-width: 100px;
+        max-width: 110px;
         height: auto;
     }
 }
