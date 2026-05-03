@@ -46,7 +46,7 @@
 
                         <AsyncAction
                             v-slot:default="{ run, isLoading }"
-                            :action="() => cartStore.remove({ itemId: item.id })"
+                            :action="() => cartStore.remove(item.id)"
                         >
                             <button
                                 type="button"
@@ -103,8 +103,8 @@ import { computed, watch } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useOffcanvasCartStore } from '~/stores/offcanvasCart'
 import type { CartItem, CartTotal } from '~/interfaces/cart'
-import Cross10Svg from '~/svg/cross-10.svg'
 import Cross12Svg from '~/svg/cross-12.svg'
+import Cross10Svg from '~/svg/cross-10.svg'
 
 type Type = 'dropdown' | 'offcanvas'
 

@@ -128,7 +128,7 @@ export const useCartStore = defineStore('cart', {
                 text: `Produto "${product.name}" adicionado com sucesso!`
             })
         },
-        remove(itemId: number) {
+        async remove(itemId: number) {
             this.items = this.items.filter(i => i.id !== itemId)
             this.quantity = calcQuantity(this.items)
             this.subtotal = calcSubtotal(this.items)

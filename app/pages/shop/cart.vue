@@ -96,7 +96,7 @@
                                                 ]"
                                                 @click="run"
                                             >
-                                                <Trash16Svg />
+                                                <Cross10Svg />
                                             </button>
                                         </AsyncAction>
                                     </td>
@@ -299,7 +299,7 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { useAccountStore } from '~/stores/account'
-import Trash16Svg from '~/svg/trash-16.svg'
+import Cross10Svg from '~/svg/cross-10.svg'
 
 const cartStore = useCartStore()
 const account = useAccountStore()
