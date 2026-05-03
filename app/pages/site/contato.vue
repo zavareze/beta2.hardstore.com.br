@@ -53,7 +53,7 @@
                                         Envie a sua mensagem
                                     </h4>
 
-                                    <form>
+                                    <form ref="formMatriz" :class="{ 'was-validated': formValidado }" novalidate>
                                         <div class="row g-2 mb-2">
                                             <div class="col-md-6">
                                                 <div class="form-floating">
@@ -62,21 +62,26 @@
                                                         class="form-control"
                                                         type="text"
                                                         placeholder="Seu Nome"
+                                                        required
                                                         v-model="dados.nome"
                                                     >
                                                     <label for="form-name">Seu Nome</label>
+                                                    <div class="valid-feedback">Ok!</div>
+                                                    <div class="invalid-feedback">Informe o seu nome.</div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-floating">
                                                     <input
                                                         id="form-email"
-                                                        :class="['form-control', { 'is-invalid': emailInvalido }]"
+                                                        class="form-control"
                                                         type="email"
                                                         placeholder="E-mail"
+                                                        required
                                                         v-model="dados.email"
                                                     >
                                                     <label for="form-email">E-mail</label>
+                                                    <div class="valid-feedback">Ok!</div>
                                                     <div class="invalid-feedback">Informe um e-mail válido.</div>
                                                 </div>
                                             </div>
@@ -97,11 +102,14 @@
                                                 class="form-control"
                                                 placeholder="Mensagem"
                                                 style="height: 120px"
+                                                required
                                                 v-model="dados.mensagem"
                                             />
                                             <label for="form-message">Mensagem</label>
+                                            <div class="valid-feedback">Ok!</div>
+                                            <div class="invalid-feedback">Escreva a sua mensagem.</div>
                                         </div>
-                                        <button type="button" class="btn btn-primary" @click="enviarContato()">
+                                        <button type="submit" class="btn btn-primary" @click.prevent="enviarContato()">
                                             Enviar Mensagem
                                         </button>
                                         <div v-if="enviado" class="alert alert-success mt-3">
@@ -161,7 +169,7 @@
                                         Envie a sua mensagem
                                     </h4>
 
-                                    <form>
+                                    <form ref="formCaxias" :class="{ 'was-validated': formCaxiasValidado }" novalidate>
                                         <div class="row g-2 mb-2">
                                             <div class="col-md-6">
                                                 <div class="form-floating">
@@ -170,21 +178,26 @@
                                                         class="form-control"
                                                         type="text"
                                                         placeholder="Seu Nome"
+                                                        required
                                                         v-model="dadosCaxias.nome"
                                                     >
                                                     <label for="form-name-caxias">Seu Nome</label>
+                                                    <div class="valid-feedback">Ok!</div>
+                                                    <div class="invalid-feedback">Informe o seu nome.</div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-floating">
                                                     <input
                                                         id="form-email-caxias"
-                                                        :class="['form-control', { 'is-invalid': emailCaxiasInvalido }]"
+                                                        class="form-control"
                                                         type="email"
                                                         placeholder="E-mail"
+                                                        required
                                                         v-model="dadosCaxias.email"
                                                     >
                                                     <label for="form-email-caxias">E-mail</label>
+                                                    <div class="valid-feedback">Ok!</div>
                                                     <div class="invalid-feedback">Informe um e-mail válido.</div>
                                                 </div>
                                             </div>
@@ -205,11 +218,14 @@
                                                 class="form-control"
                                                 placeholder="Mensagem"
                                                 style="height: 120px"
+                                                required
                                                 v-model="dadosCaxias.mensagem"
                                             />
                                             <label for="form-message-caxias">Mensagem</label>
+                                            <div class="valid-feedback">Ok!</div>
+                                            <div class="invalid-feedback">Escreva a sua mensagem.</div>
                                         </div>
-                                        <button type="button" class="btn btn-primary" @click="enviarContatoCaxias()">
+                                        <button type="submit" class="btn btn-primary" @click.prevent="enviarContatoCaxias()">
                                             Enviar Mensagem
                                         </button>
                                         <div v-if="enviadoCaxias" class="alert alert-success mt-3">
@@ -233,12 +249,12 @@ useHead({ title: 'Contato' })
 
 const account = useAccountStore()
 
+const formMatriz = ref<HTMLFormElement | null>(null)
+const formCaxias = ref<HTMLFormElement | null>(null)
+const formValidado = ref(false)
+const formCaxiasValidado = ref(false)
 const enviado = ref(false)
 const enviadoCaxias = ref(false)
-
-const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const emailInvalido = computed(() => dados.value.email.length > 0 && !reEmail.test(dados.value.email))
-const emailCaxiasInvalido = computed(() => dadosCaxias.value.email.length > 0 && !reEmail.test(dadosCaxias.value.email))
 
 const dados = ref({
     destino: 'matriz',
@@ -257,27 +273,25 @@ const dadosCaxias = ref({
 })
 
 async function enviarContato() {
-    if (dados.value.nome == '')
-        return alert('Você deve informar o nome')
-    if (dados.value.mensagem == '')
-        return alert('Você deve escrever a mensagem')
+    formValidado.value = true
+    if (!formMatriz.value?.checkValidity()) return
 
     await account.fetchContact(dados.value)
     if (!account.error) {
         enviado.value = true
+        formValidado.value = false
         dados.value = { destino: 'matriz', nome: '', email: '', titulo: '', mensagem: '' }
     }
 }
 
 async function enviarContatoCaxias() {
-    if (dadosCaxias.value.nome == '')
-        return alert('Você deve informar o nome')
-    if (dadosCaxias.value.mensagem == '')
-        return alert('Você deve escrever a mensagem')
+    formCaxiasValidado.value = true
+    if (!formCaxias.value?.checkValidity()) return
 
     await account.fetchContact(dadosCaxias.value)
     if (!account.error) {
         enviadoCaxias.value = true
+        formCaxiasValidado.value = false
         dadosCaxias.value = { destino: 'caxias', nome: '', email: '', titulo: '', mensagem: '' }
     }
 }
