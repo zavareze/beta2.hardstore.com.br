@@ -54,45 +54,59 @@
                                     </h4>
 
                                     <form>
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label for="form-name">Seu Nome</label>
-                                                <input
-                                                    id="form-name"
-                                                    class="form-control"
-                                                    type="text"
-                                                    placeholder=""
-                                                    v-model="dados.nome"
-                                                >
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input
+                                                        id="form-name"
+                                                        class="form-control"
+                                                        type="text"
+                                                        placeholder="Seu Nome"
+                                                        v-model="dados.nome"
+                                                    >
+                                                    <label for="form-name">Seu Nome</label>
+                                                </div>
                                             </div>
-                                            <div class="form-group col-md-6">
-                                                <label for="form-email">E-mail</label>
-                                                <input
-                                                    id="form-email"
-                                                    class="form-control"
-                                                    type="email"
-                                                    placeholder="seu e-mail"
-                                                    v-model="dados.email"
-                                                >
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input
+                                                        id="form-email"
+                                                        :class="['form-control', { 'is-invalid': emailInvalido }]"
+                                                        type="email"
+                                                        placeholder="E-mail"
+                                                        v-model="dados.email"
+                                                    >
+                                                    <label for="form-email">E-mail</label>
+                                                    <div class="invalid-feedback">Informe um e-mail válido.</div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="form-subject">Titulo</label>
+                                        <div class="form-floating mb-2">
                                             <input
                                                 id="form-subject"
                                                 class="form-control"
                                                 type="text"
-                                                placeholder=""
+                                                placeholder="Título"
                                                 v-model="dados.titulo"
                                             >
+                                            <label for="form-subject">Título</label>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-floating mb-3">
+                                            <textarea
+                                                id="form-message"
+                                                class="form-control"
+                                                placeholder="Mensagem"
+                                                style="height: 120px"
+                                                v-model="dados.mensagem"
+                                            />
                                             <label for="form-message">Mensagem</label>
-                                            <textarea id="form-message" class="form-control" :rows="4" v-model="dados.mensagem" />
                                         </div>
                                         <button type="button" class="btn btn-primary" @click="enviarContato()">
                                             Enviar Mensagem
                                         </button>
+                                        <div v-if="enviado" class="alert alert-success mt-3">
+                                            Mensagem enviada com sucesso! Nosso tempo de resposta é de até 48hs. Obrigado!
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -148,45 +162,59 @@
                                     </h4>
 
                                     <form>
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label for="form-name">Seu Nome</label>
-                                                <input
-                                                    id="form-name"
-                                                    class="form-control"
-                                                    type="text"
-                                                    placeholder=""
-                                                    v-model="dadosCaxias.nome"
-                                                >
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input
+                                                        id="form-name-caxias"
+                                                        class="form-control"
+                                                        type="text"
+                                                        placeholder="Seu Nome"
+                                                        v-model="dadosCaxias.nome"
+                                                    >
+                                                    <label for="form-name-caxias">Seu Nome</label>
+                                                </div>
                                             </div>
-                                            <div class="form-group col-md-6">
-                                                <label for="form-email">E-mail</label>
-                                                <input
-                                                    id="form-email"
-                                                    class="form-control"
-                                                    type="email"
-                                                    placeholder="seu e-mail"
-                                                    v-model="dadosCaxias.email"
-                                                >
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input
+                                                        id="form-email-caxias"
+                                                        :class="['form-control', { 'is-invalid': emailCaxiasInvalido }]"
+                                                        type="email"
+                                                        placeholder="E-mail"
+                                                        v-model="dadosCaxias.email"
+                                                    >
+                                                    <label for="form-email-caxias">E-mail</label>
+                                                    <div class="invalid-feedback">Informe um e-mail válido.</div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="form-subject">Titulo</label>
+                                        <div class="form-floating mb-2">
                                             <input
-                                                id="form-subject"
+                                                id="form-subject-caxias"
                                                 class="form-control"
                                                 type="text"
-                                                placeholder=""
+                                                placeholder="Título"
                                                 v-model="dadosCaxias.titulo"
                                             >
+                                            <label for="form-subject-caxias">Título</label>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="form-message">Mensagem</label>
-                                            <textarea id="form-message" class="form-control" :rows="4" v-model="dadosCaxias.mensagem" />
+                                        <div class="form-floating mb-3">
+                                            <textarea
+                                                id="form-message-caxias"
+                                                class="form-control"
+                                                placeholder="Mensagem"
+                                                style="height: 120px"
+                                                v-model="dadosCaxias.mensagem"
+                                            />
+                                            <label for="form-message-caxias">Mensagem</label>
                                         </div>
                                         <button type="button" class="btn btn-primary" @click="enviarContatoCaxias()">
                                             Enviar Mensagem
                                         </button>
+                                        <div v-if="enviadoCaxias" class="alert alert-success mt-3">
+                                            Mensagem enviada com sucesso! Nosso tempo de resposta é de até 48hs. Obrigado!
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -195,20 +223,6 @@
                 </div>
             </div>
         </div>
-        <b-modal
-            id="modalContato"
-            ref="modal"
-            :hide-header="true"
-            :hide-footer="true"
-            :centered="true"
-            size="md"
-            body-class="p-5"
-        >
-        Mensagem enviada com sucesso! Nosso tempo de resposta é de até 48hs. Obrigado!
-            <div>
-                <b-button class="mt-3 btn-primary" @click="$bvModal.hide('modalContato')">OK</b-button>
-            </div>
-        </b-modal>
     </div>
 </template>
 
@@ -218,6 +232,13 @@ import { useAccountStore } from '~/stores/account'
 useHead({ title: 'Contato' })
 
 const account = useAccountStore()
+
+const enviado = ref(false)
+const enviadoCaxias = ref(false)
+
+const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const emailInvalido = computed(() => dados.value.email.length > 0 && !reEmail.test(dados.value.email))
+const emailCaxiasInvalido = computed(() => dadosCaxias.value.email.length > 0 && !reEmail.test(dadosCaxias.value.email))
 
 const dados = ref({
     destino: 'matriz',
@@ -242,12 +263,9 @@ async function enviarContato() {
         return alert('Você deve escrever a mensagem')
 
     await account.fetchContact(dados.value)
-    dados.value = {
-        destino: 'matriz',
-        nome: '',
-        email: '',
-        titulo: '',
-        mensagem: ''
+    if (!account.error) {
+        enviado.value = true
+        dados.value = { destino: 'matriz', nome: '', email: '', titulo: '', mensagem: '' }
     }
 }
 
@@ -258,12 +276,9 @@ async function enviarContatoCaxias() {
         return alert('Você deve escrever a mensagem')
 
     await account.fetchContact(dadosCaxias.value)
-    dadosCaxias.value = {
-        destino: 'caxias',
-        nome: '',
-        email: '',
-        titulo: '',
-        mensagem: ''
+    if (!account.error) {
+        enviadoCaxias.value = true
+        dadosCaxias.value = { destino: 'caxias', nome: '', email: '', titulo: '', mensagem: '' }
     }
 }
 </script>

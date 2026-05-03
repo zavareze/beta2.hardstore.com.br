@@ -11,7 +11,7 @@
                             Frete Grátis
                         </div>
                         <div class="block-features__subtitle">
-                            Pedidos acima R$ 3.500* <p class="small" style="margin:0px">Para Regisão Sul</p>
+                            Pedidos acima R$ 3.500* <p class="small" style="margin:0px">Para Região Sul</p>
                         </div>
                     </div>
                 </div>
