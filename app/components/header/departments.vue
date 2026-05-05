@@ -27,7 +27,7 @@
                             <Megamenu location="departments" :menu="department.submenu.menu" />
                         </div>
                         <div
-                            v-if="department.submenu && department.submenu.type === 'menu'"
+                            v-if="department.submenu && department.submenu.type === 'menu' && department.submenu.menu.length > 0"
                             ref="submenus"
                             :class="[
                                 'departments__submenu',
@@ -45,14 +45,14 @@
                         :key="index"
                         :class="[
                             'departments__item',
-                            {'departments__item--menu': department.submenu && department.submenu.type === 'menu'},
+                            {'departments__item--menu': department.submenu && department.submenu.type === 'menu' && department.submenu.menu.length > 0},
                             {'departments__item--hover': department === hoveredItem}
                         ]"
                         @mouseenter="onItemMouseEnter(department)"
                     >
                         <AppLink class="departments__item-link" :to="department.url">
                             {{ department.title }}
-                            <ArrowRoundedRight6x9Svg v-if="department.submenu" class="departments__item-arrow" />
+                            <ArrowRoundedRight6x9Svg v-if="department.submenu && (department.submenu.type === 'megamenu' || (department.submenu.type === 'menu' && department.submenu.menu.length > 0))" class="departments__item-arrow" />
                         </AppLink>
                     </li>
                 </ul>
@@ -278,7 +278,12 @@ function getCurrentItemElement(): HTMLDivElement | null {
 
 function getCurrentSubmenuElement(): HTMLDivElement | null {
     if (!hoveredItem.value) return null
-    const index = items.value.filter(x => x.submenu).indexOf(hoveredItem.value!)
+    const index = items.value.filter(x =>
+        x.submenu && (
+            x.submenu.type === 'megamenu' ||
+            (x.submenu.type === 'menu' && x.submenu.menu.length > 0)
+        )
+    ).indexOf(hoveredItem.value!)
     if (index === -1 || !submenuElements.value[index]) return null
     return submenuElements.value[index]
 }
