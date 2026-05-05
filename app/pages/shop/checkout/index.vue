@@ -1039,7 +1039,7 @@ function createOrder () {
         currentPayment: currentPayment.value,
         installments: parcelas.value * 1,
         cart: cartStore,
-        order: account.order
+        order: { id: account.order?.id || null }
     }
     useModal().show('modalLoading')
     account.createOrder(payload).then((result) => {

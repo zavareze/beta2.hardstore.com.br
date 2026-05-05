@@ -44,6 +44,9 @@ const btnSubmit = ref(true)
 
 function closeModal() {
     appModal.hide('modalMercadoPago')
+    cartao.value = { nome: '', numero: '', mes: '', ano: '', cvv: '', tokenId: '', paymentMethod: {} as any, valor: '', parcelas: 1 }
+    error.value = ''
+    btnSubmit.value = true
 }
 
 onMounted(() => {
@@ -132,7 +135,7 @@ async function submitCard(cart: any) {
         if (cartData.securityCode === '') error.value = 'Você não preencheu o Código de Segurança'
         if (cartData.cardExpirationMonth === '') error.value = 'Você não preencheu o Mês de Vencimento'
         if (cartData.cardExpirationYear === '') error.value = 'Você não preencheu o Ano de Vencimento'
-        getPaymentMethods(cartData.cardNumber)
+        await getPaymentMethods(cartData.cardNumber)
         if (error.value !== '') {
             return
         }
@@ -149,6 +152,11 @@ async function submitCard(cart: any) {
 function sendToServer() {
     if (btnSubmit.value) {
         btnSubmit.value = false
+        if (!cartao.value.paymentMethod?.id) {
+            error.value = 'Não foi possível identificar a bandeira do cartão. Digite o número completo.'
+            btnSubmit.value = true
+            return
+        }
         const transactionAmount = cartao.value.parcelas === 1 ? props.valor1x : cartao.value.parcelas <= 3 ? props.valor3x : props.valor
         const email = accountStore.user.email
         const order = accountStore.order.id
@@ -157,7 +165,7 @@ function sendToServer() {
         const data = {
             order,
             token: cartao.value.tokenId,
-            issuerId: cartao.value.paymentMethod.issuer.id,
+            issuerId: cartao.value.paymentMethod?.issuer?.id ?? null,
             paymentMethodId: cartao.value.paymentMethod.id,
             transactionAmount,
             installments: cartao.value.parcelas,
