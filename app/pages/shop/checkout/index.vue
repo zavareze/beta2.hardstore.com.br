@@ -1038,7 +1038,7 @@ function createOrder () {
         selected: selected.value,
         currentPayment: currentPayment.value,
         installments: parcelas.value * 1,
-        cart: cartStore,
+        cart: JSON.parse(JSON.stringify(cartStore.$state)),
         order: { id: account.order?.id || null }
     }
     useModal().show('modalLoading')
