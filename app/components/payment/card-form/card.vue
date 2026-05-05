@@ -754,6 +754,71 @@ function changePlaceholder() {
       padding-right: 30px;
     }
   }
+  &__eye {
+    display: inline-flex;
+    position: absolute;
+    width: 1em;
+    height: 1em;
+    font-size: 24px;
+    border-radius: 50%;
+    top: 35px;
+    right: 10px;
+    opacity: .75;
+    color: #8c9cae;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    border: 2px solid currentColor;
+    box-shadow: none;
+    transition: all .3s ease-in-out;
+
+    &:before {
+      content: '';
+      position: absolute;
+      background: white;
+      width: 0.35em;
+      height: 0.35em;
+      top: 6px;
+      left: 6px;
+      z-index: 2;
+      border-radius: 50%;
+      transform: scale(.1);
+      opacity: 0;
+      transition: all .3s ease-in-out;
+      transition-delay: .1s;
+    }
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      background: currentColor;
+      width: 0.6em;
+      height: 0.6em;
+      border-radius: 50%;
+      transform: scale(.1);
+      opacity: 0;
+      transition: all .3s ease-in-out;
+    }
+
+    &:hover:not(:disabled), &.-active:not(:disabled) {
+      color: #2364d2;
+      opacity: 1;
+    }
+
+    &.-active {
+      &::before, &::after {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: .4;
+    }
+  }
 }
 
 .slide-fade-up-enter-active {
