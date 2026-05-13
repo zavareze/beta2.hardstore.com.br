@@ -172,7 +172,7 @@
                                                     required
                                                     :class="{ 'is-invalid': fieldError == 'document' && messageError }"
                                                     @input="onDocumentInput"
-                                                    @blur="validateDocumentField(true)"
+                                                    @blur="validateDocumentField(true); checkDocumentExists()"
                                                 >
                                                 <label for="checkout-document">CPF / CNPJ</label>
                                                 <div class="invalid-feedback">
@@ -598,10 +598,17 @@
                 :valor3x="parseFloat((cart.subtotal/.85*.9+cart.shipping).toFixed(2))"
              />
             <AppModal id="modalRecuperarSenha" hide-footer>
-                <template #modal-title>Recuperar Senha</template>
-                <h4>Seu CPF/CNPJ já possui cadastro com o email</h4>
-                <h1>{{ email }}</h1>
-                <h4>Recupere sua senha, <a href="#" @click.prevent="recuperarSenha()">Clique aqui!</a></h4>
+                <template #modal-title>Conta já cadastrada</template>
+                <div class="text-center py-2">
+                    <div class="mb-3" style="font-size:2.5rem;">🔒</div>
+                    <p class="mb-1 text-muted">Este CPF/CNPJ já possui uma conta cadastrada com o e-mail:</p>
+                    <p class="fw-bold fs-5 mb-4">{{ email }}</p>
+                    <p class="text-muted small mb-4">Para continuar sua compra, acesse sua conta ou recupere sua senha abaixo.</p>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="/account/login?redirect=/shop/checkout" class="btn btn-primary btn-lg">Entrar na minha conta</a>
+                        <button type="button" class="btn btn-outline-secondary" @click.prevent="recuperarSenha()">Esqueci minha senha</button>
+                    </div>
+                </div>
             </AppModal>
         </client-only>
     </div>
@@ -610,6 +617,7 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { useAccountStore } from '~/stores/account'
+import accountApi from '~/api/account'
 import Check9x7Svg from '~/svg/check-9x7.svg'
 
 const cartStore = useCartStore()
@@ -759,6 +767,18 @@ function getDocumentError () {
     if (document.length !== 11) return 'CPF inválido, verifique e tente novamente.'
     if (!isValidCpf(document)) return 'CPF inválido, verifique e tente novamente.'
     return ''
+}
+
+async function checkDocumentExists () {
+    const doc = user.value.document.replace(/\D/g, '')
+    if (doc.length !== 11 && doc.length !== 14) return
+    try {
+        const result: any = await accountApi.checkDocument(doc)
+        if (result.data?.data?.exists) {
+            email.value = result.data.data.email
+            useModal().show('modalRecuperarSenha')
+        }
+    } catch {}
 }
 
 function clearDocumentValidation () {
@@ -1062,15 +1082,17 @@ function createOrder () {
         }
     }).catch((result) => {
         useModal().hide('modalLoading')
-        createError.value = result.message
-        if (result.statusCode == 401) {
-            email.value = result.message
+        const apiMessage = result.response?.data?.message || result.message
+        const apiStatusCode = result.response?.data?.statusCode || result.statusCode
+        createError.value = apiMessage
+        if (apiStatusCode == 401) {
+            email.value = apiMessage
             useModal().show('modalRecuperarSenha')
         }
         useNuxtApp().$notify?.({
             group: 'api',
             type: 'error text-error',
-            text: result.message,
+            text: apiMessage,
             duration: 5000
         })
     })

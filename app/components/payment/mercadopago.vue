@@ -51,9 +51,35 @@ function closeModal() {
 
 onMounted(() => {
     if (process.client) {
-        mercadopago.value = new (window as any).MercadoPago('APP_USR-948b11fe-65c5-4dab-996b-2e7c1d9a7c45')
+        loadMercadoPagoSdk().then(() => {
+            mercadopago.value = new (window as any).MercadoPago('APP_USR-948b11fe-65c5-4dab-996b-2e7c1d9a7c45')
+        }).catch((e) => {
+            console.error('Error loading MercadoPago SDK: ', e)
+        })
     }
 })
+
+function loadMercadoPagoSdk(): Promise<void> {
+    if ((window as any).MercadoPago) {
+        return Promise.resolve()
+    }
+
+    return new Promise((resolve, reject) => {
+        const existingScript = document.querySelector<HTMLScriptElement>('script[src="https://sdk.mercadopago.com/js/v2"]')
+        if (existingScript) {
+            existingScript.addEventListener('load', () => resolve(), { once: true })
+            existingScript.addEventListener('error', reject, { once: true })
+            return
+        }
+
+        const script = document.createElement('script')
+        script.src = 'https://sdk.mercadopago.com/js/v2'
+        script.async = true
+        script.onload = () => resolve()
+        script.onerror = reject
+        document.head.appendChild(script)
+    })
+}
 
 async function getIdentificationTypes() {
     try {

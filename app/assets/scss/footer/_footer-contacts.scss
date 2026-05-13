@@ -45,6 +45,9 @@
     display: inline-block;
     text-align: center;
     width: 22px;
+    height: 16px;
+    fill: currentColor;
+    vertical-align: -2px;
 
     @include direction {
         #{$margin-inline-end}: 2px;

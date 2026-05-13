@@ -9,18 +9,8 @@
                 <div v-if="layout === 'with-departments'" class="col-lg-3 d-none d-lg-block" />
                 <div :class="['col-12', { 'col-lg-9': layout === 'with-departments' }]">
                     <div class="block-slideshow__body">
-                        <Carousel :options="{
-                            grabCursor: true,
-                            loop: true,
-                            pagination: { clickable: true },
-                            autoplay: {
-                                delay: 5000,
-                                disableOnInteraction: false,
-                                pauseOnMouseEnter: false
-                            },
-                            speed: 600
-                        }">
-                            <CarouselSlide v-for="(slide, index) in slides" :key="index">
+                        <Carousel :options="carouselOptions">
+                            <CarouselSlide v-for="(slide, index) in slidesToRender" :key="index">
                                 <AppLink class="block-slideshow__slide" :to="slide.url">
                                     <div
                                         class="block-slideshow__slide-image block-slideshow__slide-image--desktop"
@@ -42,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import departments from '~/services/departments'
 
 type BlockSlideshowLayout = 'full' | 'with-departments'
@@ -60,43 +50,49 @@ interface Slide {
 
 const props = withDefaults(defineProps<{
     layout?: BlockSlideshowLayout
+    slidesData?: Slide[]
 }>(), {
-    layout: 'full'
+    layout: 'full',
+    slidesData: () => []
 })
 
 const url = useUrl()
 const el = ref<HTMLElement | null>(null)
 
-const slides: Slide[] = [
-    {
-        title: ' ', text: ' ',
-        imageClassic: '/images/banners/banner-promo-natal.png',
-        imageFull: '/images/banners/banner-promo-natal.png',
-        imageMobile: '',
-        url: '/shop/promocao?sort=recents_desc'
-    },
-    {
-        title: ' ', text: ' ',
-        imageClassic: '/images/banners/banner-promo-roku.png',
-        imageFull: '/images/banners/banner-promo-roku.png',
-        imageMobile: '',
-        url: `${url.catalog()}?filter_search=roku`
-    },
-    {
-        title: ' ', text: ' ',
-        imageClassic: '/images/banners/baly.png',
-        imageFull: '/images/banners/baly.png',
-        imageMobile: '',
-        url: `${url.catalog()}?filter_search=redragon`
-    },
-    {
-        title: ' ', text: ' ',
-        imageClassic: '/images/banners/manu.jpeg',
-        imageFull: '/images/banners/manu.jpeg',
-        imageMobile: '',
-        url: url.catalog()
-    },
-]
+const slidesToRender = computed(() => {
+    return props.slidesData && props.slidesData.length > 0 ? props.slidesData : []
+})
+
+useHead(() => {
+    const firstSlide = slidesToRender.value[0]
+    if (!firstSlide) {
+        return {}
+    }
+
+    const desktopImage = url.img(props.layout === 'with-departments' ? firstSlide.imageClassic : firstSlide.imageFull)
+    const mobileImage = url.img(firstSlide.imageMobile || (props.layout === 'with-departments' ? firstSlide.imageClassic : firstSlide.imageFull))
+
+    return {
+        link: [
+            { rel: 'preload', as: 'image', href: desktopImage, media: '(min-width: 576px)', fetchpriority: 'high' },
+            { rel: 'preload', as: 'image', href: mobileImage, media: '(max-width: 575.98px)', fetchpriority: 'high' }
+        ]
+    }
+})
+
+const carouselOptions = computed(() => ({
+    grabCursor: slidesToRender.value.length > 1,
+    loop: slidesToRender.value.length > 1,
+    pagination: { clickable: slidesToRender.value.length > 1 },
+    autoplay: slidesToRender.value.length > 1
+        ? {
+            delay: 5000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: false
+        }
+        : false,
+    speed: 600
+}))
 
 onMounted(() => { if (el.value) departments.set(el.value) })
 onBeforeUnmount(() => { departments.set(null) })

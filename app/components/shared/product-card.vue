@@ -34,12 +34,14 @@
             </div>
         </div>
 
-        <div v-if="product.images && product.images.length > 0" class="product-card__image product-image">
+        <div class="product-card__image product-image">
             <AppLink :to="url.product(product)" class="product-image__body">
                 <!--suppress HtmlUnknownTarget --><!-- 1280x960 213x160 350x263 -->
                 <img class="product-image__img"
-                :loading="(index ?? 0) === 0 ? 'eager' : 'lazy'"
-                :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/350x263/' + product.images[0] + '.webp'"
+                :loading="index === 0 ? 'eager' : 'lazy'"
+                decoding="async"
+                :fetchpriority="index === 0 ? 'high' : 'auto'"
+                :src="productImage(product)"
                 :alt="product.name"
                 width="350"
                 height="263">
@@ -49,8 +51,12 @@
         <div v-if="product.vendor" class="product-card__vendor">
             <img
                 :alt="product.vendor"
-                :src="'https://static.hardstore.com.br/images/fabricantes/'+product.vendor+'.webp'"
-                @error="($event.target as HTMLImageElement).style.display='none'"
+                :src="brandImageCandidates(product.vendor)[0]"
+                :data-brand-id="product.vendor"
+                :data-fallback-index="0"
+                loading="lazy"
+                decoding="async"
+                @error="onBrandImageError"
             >
         </div>
         <div class="product-card__info">
@@ -200,4 +206,43 @@ const features = computed(() => {
     else
         return false
 })
+
+function brandImageCandidates(brandId: string | number) {
+    const file = `${brandId}.webp`
+    return [
+        `/images/fabricantes/${file}`,
+        `https://cdn-hardstore.s3-sa-east-1.amazonaws.com/images/fabricantes/${file}`,
+        `https://static.hardstore.com.br/images/fabricantes/${file}`
+    ]
+}
+
+function productImage(product: any) {
+    const images = Array.isArray(product.images) && product.images.length ? product.images : [1]
+    return `https://cdn-hardstore.s3-sa-east-1.amazonaws.com/${product.id}/350x263/${images[0]}.webp`
+}
+
+function onBrandImageError(event: Event) {
+    const target = event.target as HTMLImageElement | null
+    if (!target) {
+        return
+    }
+
+    const brandId = target.dataset.brandId
+    const currentIndex = Number(target.dataset.fallbackIndex || '0')
+    if (!brandId) {
+        target.style.display = 'none'
+        return
+    }
+
+    const candidates = brandImageCandidates(brandId)
+    const nextIndex = currentIndex + 1
+
+    if (nextIndex >= candidates.length) {
+        target.style.display = 'none'
+        return
+    }
+
+    target.dataset.fallbackIndex = String(nextIndex)
+    target.src = candidates[nextIndex]
+}
 </script>

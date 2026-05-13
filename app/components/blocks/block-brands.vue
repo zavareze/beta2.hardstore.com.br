@@ -6,7 +6,16 @@
                     <CarouselSlide v-for="(brand, index) in brandsFilter()" :key="index">
                         <div class="block-brands__item">
                             <!--suppress HtmlUnknownTarget -->
-                            <img :src="'https://static.hardstore.com.br/images/fabricantes/' + brand + '.webp'" loading="lazy" alt="" class="mx-auto" style="max-height: 40px; max-width: 100px">
+                            <img
+                                :src="brandImageCandidates(brand)[0]"
+                                :data-brand-id="brand"
+                                :data-fallback-index="0"
+                                loading="lazy"
+                                alt=""
+                                class="mx-auto"
+                                style="max-height: 40px; max-width: 100px"
+                                @error="onBrandImageError"
+                            >
                         </div>
                     </CarouselSlide>
                 </Carousel>
@@ -55,6 +64,39 @@ onMounted(() => {
 function brandsFilter() {
     const brands = [1,83,9,35,25,26,29,21,160,18,315,31,157,195,379,322,7,42,22,114,340,19,27,225]
     return brands
+}
+
+function brandImageCandidates(brandId: number) {
+    const file = `${brandId}.webp`
+    return [
+        `/images/fabricantes/${file}`,
+        `https://cdn-hardstore.s3-sa-east-1.amazonaws.com/images/fabricantes/${file}`,
+        `https://static.hardstore.com.br/images/fabricantes/${file}`
+    ]
+}
+
+function onBrandImageError(event: Event) {
+    const target = event.target as HTMLImageElement | null
+    if (!target) {
+        return
+    }
+
+    const brandId = Number(target.dataset.brandId || '')
+    const currentIndex = Number(target.dataset.fallbackIndex || '0')
+    if (!brandId) {
+        return
+    }
+
+    const candidates = brandImageCandidates(brandId)
+    const nextIndex = currentIndex + 1
+
+    if (nextIndex >= candidates.length) {
+        target.style.display = 'none'
+        return
+    }
+
+    target.dataset.fallbackIndex = String(nextIndex)
+    target.src = candidates[nextIndex]
 }
 </script>
 <style scoped>

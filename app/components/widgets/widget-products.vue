@@ -9,11 +9,11 @@
                 :key="product.id"
                 class="widget-products__item"
             >
-                <div v-if="product.images && product.images.length > 0" class="widget-products__image">
+                <div class="widget-products__image">
                     <div class="product-image">
                         <AppLink :to="url.product(product)" class="product-image__body">
                             <!--suppress HtmlUnknownTarget -->
-                            <img class="product-image__img" :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/350x263/' + product.images[0] + '.webp'" alt="">
+                            <img class="product-image__img" :src="productImage(product)" :alt="product.name">
                         </AppLink>
                     </div>
                 </div>
@@ -55,4 +55,9 @@ withDefaults(defineProps<{
 
 const url = useUrl()
 const { price } = usePrice()
+
+function productImage(product: IProduct) {
+    const images = Array.isArray(product.images) && product.images.length ? product.images : [1]
+    return `https://cdn-hardstore.s3-sa-east-1.amazonaws.com/${product.id}/350x263/${images[0]}.webp`
+}
 </script>

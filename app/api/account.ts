@@ -73,6 +73,9 @@ const accountApi = {
     createUser: (payload) => {
         return axios.post('https://api.hardstore.com.br/api/user', payload).then(response => response)
     },
+    checkDocument: (document: string) => {
+        return axios.get(`https://api.hardstore.com.br/api/user/check/${document}`).then(response => response)
+    },
     createOrder: (payload) => {
         return axios.post('https://api.hardstore.com.br/api/pedidos/create', payload).then(response => response)
     },

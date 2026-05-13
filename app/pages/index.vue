@@ -1,6 +1,6 @@
 <template>
     <div>
-        <BlockSlideshow layout="with-departments" />
+        <BlockSlideshow layout="with-departments" :slides-data="homeHeroSlides" />
 
         <BlockFeatures />
 
@@ -20,7 +20,7 @@
             />
         </BlockProductsCarouselContainer>
 
-        <BlockBanner :data="{ img: '/images/banners/notebook.webp', mobile: '/images/banners/notebook-mobile.webp', url: '/shop/notebooks'}" />
+        <BlockBanner v-if="homeSectionBanner1" :data="homeSectionBanner1" />
 
         <BlockProductsCarouselContainer
             v-slot:default="{ products, isLoading, tabs, handleTabChange }"
@@ -37,7 +37,7 @@
                 @groupClick="handleTabChange"
             />
         </BlockProductsCarouselContainer>
-        <BlockBanner :data="{ img: '/images/banners/pc.webp', mobile: '/images/banners/pc-mobile.webp', url: '/computadores/pc-gamer'}" />
+        <BlockBanner v-if="homeSectionBanner2" :data="homeSectionBanner2" />
 
         <BlockProductsCarouselContainer
             v-slot:default="{ products, isLoading, tabs, handleTabChange }"
@@ -55,7 +55,7 @@
             />
         </BlockProductsCarouselContainer>
 
-        <BlockBanner :data="{ img: '/images/banners/notebook.webp', mobile: '/images/banners/notebook-mobile.webp', url: '/shop/notebooks'}" />
+        <BlockBanner v-if="homeSectionBanner3" :data="homeSectionBanner3" />
 
         <BlockProductsCarouselContainer
             v-slot:default="{ products, isLoading, tabs, handleTabChange }"
@@ -73,7 +73,7 @@
             />
         </BlockProductsCarouselContainer>
 
-        <BlockBanner :data="{ img: '/images/banners/z690.webp', mobile: '/images/banners/z690-mobile.webp', url: 'https://bit.ly/IntelZ690_banner1110'}" />
+        <BlockBanner v-if="homeSectionBanner4" :data="homeSectionBanner4" />
 
         <BlockProducts
             title="Mais Vendidos"
@@ -135,6 +135,21 @@ const options = useOptionsStore()
 options.setHeaderLayout('default')
 options.setDropcartType('dropdown')
 
+type HomeHeroSlide = {
+    title: string
+    text: string
+    imageClassic: string
+    imageFull: string
+    imageMobile: string
+    url: string
+}
+
+type HomeSectionBanner = {
+    img: string
+    mobile: string
+    url: string
+}
+
 async function loadColumns () {
     const topRated = shopApi.getTopRatedProducts({ limit: 3 })
     const specialOffers = shopApi.getDiscountedProducts({ limit: 3 })
@@ -150,6 +165,7 @@ useHead({ title: '' })
 
 const [
     ,
+    { data: homeBanners },
     { data: homeVideos },
     { data: featuredProducts },
     { data: featuredProductsComputadores },
@@ -164,6 +180,11 @@ const [
         await shop.fetchCategory({ categorySlug: null })
         return true
     }),
+    useAsyncData('homeBanners', () =>
+        $fetch<{ data?: { heroSlides?: HomeHeroSlide[] } }>('/api/banners', { query: { page: 'home' } })
+            .then((response) => response?.data || {})
+            .catch(() => ({}))
+    ),
     useAsyncData('homeVideos', () =>
         shopApi.getVideoList()
     ),
@@ -190,6 +211,32 @@ const [
     ),
     useAsyncData('columns', () => loadColumns())
 ])
+
+const homeHeroSlides = computed<HomeHeroSlide[]>(() => {
+    return Array.isArray(homeBanners.value?.heroSlides) ? homeBanners.value.heroSlides : []
+})
+
+function normalizeSectionBanner(slotKey: string): HomeSectionBanner | null {
+    const slot = homeBanners.value?.sectionBanners?.[slotKey]
+    if (!slot || typeof slot !== 'object') {
+        return null
+    }
+
+    const img = typeof slot.img === 'string' ? slot.img.trim() : ''
+    if (!img) {
+        return null
+    }
+
+    const mobile = typeof slot.mobile === 'string' && slot.mobile.trim() !== '' ? slot.mobile.trim() : img
+    const url = typeof slot.url === 'string' && slot.url.trim() !== '' ? slot.url.trim() : '#'
+
+    return { img, mobile, url }
+}
+
+const homeSectionBanner1 = computed<HomeSectionBanner | null>(() => normalizeSectionBanner('home-faixa-1'))
+const homeSectionBanner2 = computed<HomeSectionBanner | null>(() => normalizeSectionBanner('home-faixa-2'))
+const homeSectionBanner3 = computed<HomeSectionBanner | null>(() => normalizeSectionBanner('home-faixa-3'))
+const homeSectionBanner4 = computed<HomeSectionBanner | null>(() => normalizeSectionBanner('home-faixa-4'))
 
 const videoPosts = computed(() => {
     return Array.isArray(homeVideos.value?.data?.videos)

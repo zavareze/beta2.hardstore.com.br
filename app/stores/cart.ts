@@ -38,9 +38,8 @@ const calcSubtotal = (items: CartItem[]) => items.reduce((s, i) => s + i.total, 
 const calcQuantity = (items: CartItem[]) => items.reduce((q, i) => q + i.quantity, 0)
 const calcWeight = (items: CartItem[]) => items.reduce((w, i) => w + i.quantity * (i.product as any).weight, 0)
 const calcMultiple = (items: CartItem[]) => {
-    const lojas: any[] = []
-    items.map(i => { lojas[(i as any).local] = true })
-    return lojas.length >= 3
+    const lojas = new Set(items.map(i => (i as any).local))
+    return lojas.size >= 2
 }
 
 export const useCartStore = defineStore('cart', {

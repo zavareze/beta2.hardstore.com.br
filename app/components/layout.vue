@@ -46,7 +46,9 @@
                 <template #body="props">
                     <div class="vue-toast success" @click="router.push('/shop/compare')">
                         <a class="title">{{props.item.title}}</a>
-                        <a class="close" @click="props.close"><i class="fa fa-fw fa-close"></i></a>
+                        <a class="close" @click="props.close" aria-label="Fechar">
+                            <Cross20Svg />
+                        </a>
                         <div v-html="props.item.text"></div>
                     </div>
                 </template>
@@ -63,6 +65,7 @@ import { ref, onMounted, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useOptionsStore } from '~/stores/options'
 import { useHead } from '#app'
+import Cross20Svg from '~/svg/cross-20.svg'
 
 const optionsStore = useOptionsStore()
 const router = useRouter()

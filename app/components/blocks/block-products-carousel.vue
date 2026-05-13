@@ -26,8 +26,8 @@
                 <Carousel ref="carousel" :options="carouselOptions">
                     <CarouselSlide v-for="(column, index) in columns" :key="index">
                         <div class="block-products-carousel__column">
-                            <div v-for="product in column" :key="product.id" class="block-products-carousel__cell">
-                                <ProductCard :product="product" />
+                            <div v-for="(product, productIndex) in column" :key="product.id" class="block-products-carousel__cell">
+                                <ProductCard :product="product" :index="index * rows + productIndex" />
                             </div>
                         </div>
                     </CarouselSlide>

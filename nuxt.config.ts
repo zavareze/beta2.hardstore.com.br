@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     ssr: true,
 
     routeRules: {
+        '/': { swr: 300 },
         '/shop/pc-gamer': { redirect: { to: '/computadores/pc-gamer', statusCode: 301 } },
         '/shop/catalog/pc-gamer': { redirect: { to: '/computadores/pc-gamer', statusCode: 301 } },
     },
@@ -46,10 +47,7 @@ export default defineNuxtConfig({
                 { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Roboto:400,400i,500,500i,700,700i&display=swap' },
                 { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
             ],
-            script: [
-                { src: 'https://widgetwhats.com/app/static/widget-wa.js', defer: true },
-                { src: 'https://sdk.mercadopago.com/js/v2', defer: true }
-            ]
+            script: []
         }
     },
 
@@ -63,6 +61,15 @@ export default defineNuxtConfig({
         'pinia-plugin-persistedstate/nuxt',
         // '@nuxtjs/gtm' — install when nuxt3 version is confirmed
     ],
+
+    nitro: {
+        storage: {
+            cache: {
+                driver: 'fs',
+                base: '/dominios/beta2.hardstore.com.br/.output/cache'
+            }
+        }
+    },
 
 
     // GTM config — uncomment after installing @nuxtjs/gtm for nuxt3

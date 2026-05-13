@@ -5,7 +5,7 @@
         <div v-if="layout === 'default'" class="site-header__middle container">
             <div class="site-header__logo">
                 <AppLink to="/">
-                    <img src="/images/logo-hardstore2026.webp" width="320" style="margin-right:40px;max-width: 290px;">
+                    <img  width="320" style="margin-right:10px;max-width: 250px;">
                 </AppLink>
             </div>
             <div class="site-header__search">

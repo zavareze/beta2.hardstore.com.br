@@ -1,7 +1,7 @@
 <template>
     <div :class="`product product--layout--${layout}`">
         <div class="product__content">
-            <ProductGallery :layout="layout" :images="product.images" :product="product" />
+            <ProductGallery :layout="layout" :images="productImages" :product="product" />
 
             <div class="product__info">
                 <div class="product__wishlist-compare">
@@ -304,6 +304,9 @@ const cep = ref<any>({ cep: accountStore.cep, estimativa: '', error: '', fretes:
 const maxQuantity = ref<number | undefined>(undefined)
 const stockError = ref('')
 const { show: showModal } = useModal()
+const productImages = computed(() => {
+    return props.product.images && props.product.images.length ? props.product.images : [1]
+})
 
 onMounted(async () => {
     if (props.product.status === 3) {

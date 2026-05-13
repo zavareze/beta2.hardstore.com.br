@@ -98,8 +98,23 @@ function getProductsListUrl(params: Record<string, unknown>) {
     return `https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`
 }
 
+function withDefaultImages<T extends { images?: unknown }>(product: T): T {
+    if (!Array.isArray(product.images) || product.images.length === 0) {
+        product.images = [1]
+    }
+
+    return product
+}
+
+function withDefaultImagesList<T extends { images?: unknown }>(products: T[] | null | undefined): T[] {
+    return (products || []).map(withDefaultImages)
+}
+
 async function fetchProductsListPage(params: Record<string, unknown>): Promise<IProductsList> {
-    return fetch(getProductsListUrl(params)).then(response => response.json())
+    return fetch(getProductsListUrl(params)).then(response => response.json()).then((productsList) => {
+        productsList.items = (productsList.items || []).map(withDefaultImages)
+        return productsList
+    })
 }
 
 async function fetchProductsListWithRequestedLimit(options: any, filters: any): Promise<IProductsList> {
@@ -238,18 +253,18 @@ const shopApi = {
         return fetchProductsListWithRequestedLimit(options, filters)
     },
     getProductBySlug: (slug: string): Promise<IProduct> => {
-        return fetch(`https://api.hardstore.com.br/api/produto/${slug}`).then(response => response.json())
+        return fetch(`https://api.hardstore.com.br/api/produto/${slug}`).then(response => response.json()).then(withDefaultImages)
     },
     getProductById: (id: string): Promise<any> => {
-        return fetch(`https://api.hardstore.com.br/api/produto/id/${id}`).then(response => response.json())
+        return fetch(`https://api.hardstore.com.br/api/produto/id/${id}`).then(response => response.json()).then(withDefaultImages)
     },
     getSuggestions: (query: string, options: any): Promise<IProduct[]> => {
         const params = { ...options, search: query }
-        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => (x.items || []).slice(0, options.limit || 5)))
+        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => (x.items || []).slice(0, options.limit || 5).map(withDefaultImages)))
     },
     getRelatedProducts: (slug: string, options: any): Promise<IProduct[]> => {
         const params = { category: slug, ...options }
-        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => x.items))
+        return fetch(`https://api.hardstore.com.br/api/produtos?${JSON.stringify(params)}`).then(r => r.json().then(x => (x.items || []).map(withDefaultImages)))
     },
     getPopularProducts: (options: any = {}): Promise<IProduct[]> => {
         return fetchStorefront({
@@ -257,7 +272,7 @@ const shopApi = {
             collection: 'popular',
             limit: options.limit,
             category: options.category
-        }, emptyProductsResponse)
+        }, emptyProductsResponse).then(withDefaultImagesList)
     },
     getLatestProducts: (options: any): Promise<IProduct[]> => {
         return fetchStorefront({
@@ -265,7 +280,7 @@ const shopApi = {
             collection: 'latest',
             limit: options.limit,
             category: options.category
-        }, emptyProductsResponse)
+        }, emptyProductsResponse).then(withDefaultImagesList)
     },
     getFeaturedProducts: (options: any): Promise<IProduct[]> => {
         return fetchStorefront({
@@ -273,7 +288,7 @@ const shopApi = {
             collection: 'featured',
             limit: options.limit,
             category: options.category
-        }, emptyProductsResponse)
+        }, emptyProductsResponse).then(withDefaultImagesList)
     },
     getTopRatedProducts: (options: any): Promise<IProduct[]> => {
         return fetchStorefront({
@@ -281,7 +296,7 @@ const shopApi = {
             collection: 'topRated',
             limit: options.limit,
             category: options.category
-        }, emptyProductsResponse)
+        }, emptyProductsResponse).then(withDefaultImagesList)
     },
     getDiscountedProducts: (options: any): Promise<IProduct[]> => {
         return fetchStorefront({
@@ -289,7 +304,7 @@ const shopApi = {
             collection: 'discount',
             limit: options.limit,
             category: options.category
-        }, emptyProductsResponse)
+        }, emptyProductsResponse).then(withDefaultImagesList)
     },
     checkAvaiability: (payload) => {
         return fetch(`https://api.hardstore.com.br/api/stock/${payload}`).then(r => r.json())
