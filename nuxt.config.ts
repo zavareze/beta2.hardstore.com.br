@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
 
+
     typescript: {
         strict: false
     },
@@ -12,6 +13,23 @@ export default defineNuxtConfig({
 
     routeRules: {
         '/': { swr: 300 },
+        '/computadores/**': { swr: 300 },
+        '/blog/**': { swr: 300 },
+        '/site/**': { swr: 3600 },
+        // Categorias: conteúdo idêntico para todos os usuários (estado do carrinho é client-side)
+        '/shop/**': { swr: 60 },
+        // Produtos: estoque em tempo real, sem cache
+        '/shop/products/**': {
+            swr: false,
+            cache: false,
+            headers: { 'cache-control': 'no-store, no-cache, must-revalidate, proxy-revalidate' }
+        },
+        // Páginas transacionais: nunca cachear
+        '/shop/cart': { swr: false },
+        '/shop/payment': { swr: false },
+        '/shop/wishlist': { swr: false },
+        '/shop/compare': { swr: false },
+        '/shop/track-order': { swr: false },
         '/shop/pc-gamer': { redirect: { to: '/computadores/pc-gamer', statusCode: 301 } },
         '/shop/catalog/pc-gamer': { redirect: { to: '/computadores/pc-gamer', statusCode: 301 } },
     },
@@ -42,12 +60,130 @@ export default defineNuxtConfig({
                 }
             ],
             link: [
+                { rel: 'preconnect', href: 'https://www.googletagmanager.com' },
+                { rel: 'dns-prefetch', href: 'https://www.google-analytics.com' },
+                { rel: 'dns-prefetch', href: 'https://connect.facebook.net' },
+                { rel: 'dns-prefetch', href: 'https://code.jivosite.com' },
                 { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
                 { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-                { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Roboto:400,400i,500,500i,700,700i&display=swap' },
+                // Non-blocking font load — avoids render-blocking on first paint
+                { rel: 'preload', as: 'style', href: 'https://fonts.googleapis.com/css?family=Roboto:400,400i,500,500i,700,700i&display=swap', onload: "this.rel='stylesheet'" } as any,
                 { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
             ],
-            script: []
+            script: [
+                {
+                    type: 'application/ld+json',
+                    innerHTML: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@graph': [
+                            {
+                                '@type': 'Organization',
+                                '@id': 'https://www.hardstore.com.br/#organization',
+                                name: 'Hardstore',
+                                alternateName: 'Hardstore Informática',
+                                legalName: 'HARDSTORE COMÉRCIO IMP. EXP. DE EQUIP. DE INFORMÁTICA',
+                                url: 'https://www.hardstore.com.br/',
+                                logo: {
+                                    '@type': 'ImageObject',
+                                    url: 'https://www.hardstore.com.br/images/logo-hardstore2026.webp',
+                                    width: 250
+                                },
+                                taxID: '07.350.337/0001-78',
+                                sameAs: [
+                                    'https://www.facebook.com/hardstore',
+                                    'https://www.instagram.com/hardstoreinf/',
+                                    'https://twitter.com/hardstore',
+                                    'https://www.youtube.com/channel/UCRlekZxyrN0v1h3blYMJ9Zw'
+                                ],
+                                contactPoint: [
+                                    {
+                                        '@type': 'ContactPoint',
+                                        telephone: '+55-51-3019-2255',
+                                        contactType: 'customer service',
+                                        email: 'sac@hardstore.com.br',
+                                        areaServed: 'BR',
+                                        availableLanguage: ['Portuguese']
+                                    },
+                                    {
+                                        '@type': 'ContactPoint',
+                                        telephone: '+55-54-3066-5080',
+                                        contactType: 'customer service',
+                                        email: 'caxias@hardstore.com.br',
+                                        areaServed: 'BR',
+                                        availableLanguage: ['Portuguese']
+                                    }
+                                ]
+                            },
+                            {
+                                '@type': 'ComputerStore',
+                                '@id': 'https://www.hardstore.com.br/#poa',
+                                name: 'Hardstore - Matriz Porto Alegre',
+                                parentOrganization: { '@id': 'https://www.hardstore.com.br/#organization' },
+                                url: 'https://www.hardstore.com.br/site/contato',
+                                image: 'https://www.hardstore.com.br/images/logo-hardstore2026.webp',
+                                telephone: '+55-51-3019-2255',
+                                email: 'sac@hardstore.com.br',
+                                priceRange: 'R$$',
+                                address: {
+                                    '@type': 'PostalAddress',
+                                    streetAddress: 'Avenida Goethe, 38 - Loja 07 e 08',
+                                    addressLocality: 'Porto Alegre',
+                                    addressRegion: 'RS',
+                                    postalCode: '90430-100',
+                                    addressCountry: 'BR'
+                                },
+                                openingHoursSpecification: [
+                                    {
+                                        '@type': 'OpeningHoursSpecification',
+                                        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                                        opens: '09:00',
+                                        closes: '18:00'
+                                    },
+                                    {
+                                        '@type': 'OpeningHoursSpecification',
+                                        dayOfWeek: 'Saturday',
+                                        opens: '10:00',
+                                        closes: '14:00'
+                                    }
+                                ]
+                            },
+                            {
+                                '@type': 'ComputerStore',
+                                '@id': 'https://www.hardstore.com.br/#caxias',
+                                name: 'Hardstore - Filial Caxias do Sul',
+                                parentOrganization: { '@id': 'https://www.hardstore.com.br/#organization' },
+                                url: 'https://www.hardstore.com.br/site/contato',
+                                image: 'https://www.hardstore.com.br/images/logo-hardstore2026.webp',
+                                telephone: '+55-54-3066-5080',
+                                email: 'caxias@hardstore.com.br',
+                                priceRange: 'R$$',
+                                address: {
+                                    '@type': 'PostalAddress',
+                                    streetAddress: 'Rua Vinte de Setembro, 2223 / Loja A',
+                                    addressLocality: 'Caxias do Sul',
+                                    addressRegion: 'RS',
+                                    postalCode: '95020-450',
+                                    addressCountry: 'BR'
+                                },
+                                openingHoursSpecification: [
+                                    {
+                                        '@type': 'OpeningHoursSpecification',
+                                        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                                        opens: '09:00',
+                                        closes: '18:00'
+                                    },
+                                    {
+                                        '@type': 'OpeningHoursSpecification',
+                                        dayOfWeek: 'Saturday',
+                                        opens: '09:00',
+                                        closes: '12:00'
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                }
+            ]
         }
     },
 
@@ -63,28 +199,22 @@ export default defineNuxtConfig({
     ],
 
     nitro: {
-        storage: {
-            cache: {
-                driver: 'fs',
-                base: '/dominios/beta2.hardstore.com.br/.output/cache'
-            }
-        }
+        compressPublicAssets: { brotli: true, gzip: true },
     },
 
 
-    // GTM config — uncomment after installing @nuxtjs/gtm for nuxt3
-    // gtm: {
-    //     id: 'GTM-K6QS3D8',
-    //     enabled: true
-    // },
-
     runtimeConfig: {
         public: {
-            routerBase: process.env.ROUTER_BASE || '/'
+            routerBase: process.env.ROUTER_BASE || '/',
+            gtmId: process.env.NUXT_PUBLIC_GTM_ID || 'GTM-K6QS3D8',
+            pixelId: process.env.NUXT_PUBLIC_PIXEL_ID || '832972700646600'
         }
     },
 
     vite: {
+        build: {
+            cssCodeSplit: false
+        },
         vue: {
             template: {
                 compilerOptions: {
