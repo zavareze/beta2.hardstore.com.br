@@ -14,22 +14,22 @@
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"
     >
-        <AppLink v-if="to && trigger !== 'click'" :to="to" class="indicator__button" @click="onClick">
+        <AppLink v-if="to && trigger !== 'click'" :to="to" class="indicator__button" :aria-label="ariaLabel" @click="onClick">
             <span class="indicator__area">
                 <slot name="icon" />
-                <span v-if="value !== null" class="indicator__value">{{ value }}</span>
+                <span v-if="value !== null" class="indicator__value" aria-hidden="true">{{ value }}</span>
             </span>
         </AppLink>
-        <a v-if="to && trigger === 'click'" :href="to" class="indicator__button" @click="onClick">
+        <a v-if="to && trigger === 'click'" :href="to" class="indicator__button" :aria-label="ariaLabel" @click="onClick">
             <span class="indicator__area">
                 <slot name="icon" />
-                <span v-if="value !== null" class="indicator__value">{{ value }}</span>
+                <span v-if="value !== null" class="indicator__value" aria-hidden="true">{{ value }}</span>
             </span>
         </a>
-        <button v-if="!to" type="button" class="indicator__button" @click="onClick">
+        <button v-if="!to" type="button" class="indicator__button" :aria-label="ariaLabel" @click="onClick">
             <span class="indicator__area">
                 <slot name="icon" />
-                <span v-if="value !== null" class="indicator__value">{{ value }}</span>
+                <span v-if="value !== null" class="indicator__value" aria-hidden="true">{{ value }}</span>
             </span>
         </button>
         <div v-if="$slots.default" ref="dropdownElement" class="indicator__dropdown">
@@ -50,12 +50,14 @@ const props = withDefaults(defineProps<{
     trigger?: Trigger
     location?: Location
     closeDelayOnMouseLeave?: number
+    ariaLabel?: string
 }>(), {
     value: null,
     to: '',
     trigger: 'none',
     location: 'nav-panel',
-    closeDelayOnMouseLeave: 0
+    closeDelayOnMouseLeave: 0,
+    ariaLabel: undefined
 })
 
 const emit = defineEmits<{

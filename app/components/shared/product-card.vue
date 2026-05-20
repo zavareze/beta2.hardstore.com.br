@@ -17,6 +17,7 @@
                     'product-card__quickview',
                     {'product-card__quickview--preload': isLoading}
                 ]"
+                :aria-label="`Visualização rápida de ${product.name}`"
                 @click="run"
             >
                 <Quickview16Svg />
@@ -35,7 +36,7 @@
         </div>
 
         <div class="product-card__image product-image">
-            <AppLink :to="url.product(product)" class="product-image__body">
+            <AppLink :to="url.product(product)" class="product-image__body" @click="handleSelectItem">
                 <!--suppress HtmlUnknownTarget --><!-- 1280x960 213x160 350x263 -->
                 <img class="product-image__img"
                 :loading="index === 0 ? 'eager' : 'lazy'"
@@ -54,17 +55,19 @@
                 :src="brandImageCandidates(product.vendor)[0]"
                 :data-brand-id="product.vendor"
                 :data-fallback-index="0"
+                width="110"
+                height="40"
                 loading="lazy"
                 decoding="async"
                 @error="onBrandImageError"
             >
         </div>
         <div class="product-card__info">
-            <h2 class="product-card__name">
-                <AppLink :to="url.product(product)">
+            <h3 class="product-card__name">
+                <AppLink :to="url.product(product)" @click="handleSelectItem">
                     {{ product.name }}
                 </AppLink>
-            </h2>
+            </h3>
             <div class="product-card__rating">
                 <Rating class="product-card__rating-stars" :value="product.rating" />
                 <div class=" product-card__rating-legend">
@@ -109,7 +112,7 @@
             </div>
 
             <div class="product-card__buttons">
-                <AsyncAction v-slot:default="{ run, isLoading }" :action="() => cartStore.add({ product, quantity: 1, local: 1 })">
+                <AsyncAction v-slot:default="{ run, isLoading }" :action="addToCartAndTrack">
                     <button
                         type="button"
                         :class="[
@@ -122,7 +125,7 @@
                         Comprar
                     </button>
                 </AsyncAction>
-                <AsyncAction v-slot:default="{ run, isLoading }" :action="() => cartStore.add({ product, quantity: 1, local: 1 })">
+                <AsyncAction v-slot:default="{ run, isLoading }" :action="addToCartAndTrack">
                     <button
                         type="button"
                         :class="[
@@ -143,6 +146,7 @@
                             'btn btn-light btn-svg-icon btn-svg-icon--fake-svg product-card__wishlist',
                             {'btn-loading': isLoading}
                         ]"
+                        aria-label="Adicionar à lista de desejos"
                         @click="run"
                     >
                         <Wishlist16Svg />
@@ -156,6 +160,7 @@
                             'btn btn-light btn-svg-icon btn-svg-icon--fake-svg product-card__compare',
                             {'btn-loading': isLoading}
                         ]"
+                        aria-label="Comparar produto"
                         @click="run"
                     >
                         <Compare16Svg />
@@ -172,6 +177,8 @@ import { useQuickviewStore } from '~/stores/quickview'
 import { useCartStore } from '~/stores/cart'
 import { useWishlistStore } from '~/stores/wishlist'
 import { useCompareStore } from '~/stores/compare'
+import { useEcommerceTracking, toGA4Item } from '~/composables/useEcommerceTracking'
+import { usePixelTracking } from '~/composables/usePixelTracking'
 import Quickview16Svg from '~/svg/quickview-16.svg'
 import Wishlist16Svg from '~/svg/wishlist-16.svg'
 import Compare16Svg from '~/svg/compare-16.svg'
@@ -190,6 +197,22 @@ const quickviewStore = useQuickviewStore()
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
 const compareStore = useCompareStore()
+const tracking = useEcommerceTracking()
+const pixel = usePixelTracking()
+
+function handleSelectItem() {
+    tracking.selectItem(
+        toGA4Item(props.product, 1, props.product.price, props.index),
+        '',
+        ''
+    )
+}
+
+async function addToCartAndTrack() {
+    await cartStore.add({ product: props.product, quantity: 1, local: 1 })
+    tracking.addToCart([toGA4Item(props.product, 1, props.product.price)], props.product.price)
+    pixel.addToCart(props.product.id, props.product.name, props.product.price, 1)
+}
 
 const productDescriptionText = computed(() => {
     const text = String(props.product.description || '')

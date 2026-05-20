@@ -123,7 +123,7 @@
                             </svg>
                         </figure>
                         <span>
-                            Chegará <span style="font-weight: 500;">entre {{ cep.estimativa }} por {{ price(cep.sedex.valor) }}</span>
+                            <span v-if="isEncomenda" style="color:#cc3333;font-weight:bold">ENCOMENDA — </span>Chegará <span style="font-weight: 500;">entre {{ cep.estimativa }} por {{ price(cep.sedex.valor) }}</span>
                         </span>
                         <div><a style="cursor: pointer; font-size: 14px; color: rgb(204, 51, 51); font-weight: 500;" @click="useModal().show('modalShipping')">Ver mais formas de entrega</a></div>
                     </div>
@@ -160,7 +160,7 @@
                                         :disabled="product.status === 3 && product.stock_caxias === false"
                                         @click="setLocal(2)"
                                     >
-                                    <span>Caxias</span>
+                                    <span>Caxias do Sul</span>
                                 </label>
                             </div>
                         </div>
@@ -273,7 +273,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import type { IProduct } from '~/interfaces/product'
 import shopApi from '~/api/shop'
 import { useCartStore } from '~/stores/cart'
@@ -281,6 +281,8 @@ import { useWishlistStore } from '~/stores/wishlist'
 import { useCompareStore } from '~/stores/compare'
 import { useAccountStore } from '~/stores/account'
 import { usePaymentOptionsStore } from '~/stores/paymentOptions'
+import { useEcommerceTracking, toGA4Item } from '~/composables/useEcommerceTracking'
+import { usePixelTracking } from '~/composables/usePixelTracking'
 import Wishlist16Svg from '~/svg/wishlist-16.svg'
 import Compare16Svg from '~/svg/compare-16.svg'
 
@@ -297,6 +299,8 @@ const wishlistStore = useWishlistStore()
 const compareStore = useCompareStore()
 const accountStore = useAccountStore()
 const paymentOptionsStore = usePaymentOptionsStore()
+const tracking = useEcommerceTracking()
+const pixel = usePixelTracking()
 
 const quantity = ref<number | string>(1)
 const local = ref<number>(1)
@@ -307,15 +311,18 @@ const { show: showModal } = useModal()
 const productImages = computed(() => {
     return props.product.images && props.product.images.length ? props.product.images : [1]
 })
+const isEncomenda = computed(() =>
+    props.product.status !== 3 &&
+    maxQuantity.value !== undefined &&
+    Number(quantity.value) > maxQuantity.value
+)
 
 onMounted(async () => {
-    if (props.product.status === 3) {
-        if (props.product.stock_caxias) {
-            local.value = 2
-        }
-        if (props.product.stock) {
-            local.value = 1
-        }
+    if (props.product.stock_caxias) {
+        local.value = 2
+    }
+    if (props.product.stock) {
+        local.value = 1
     }
     try {
         const result = await shopApi.checkAvaiability(props.product.id)
@@ -325,11 +332,29 @@ onMounted(async () => {
     } catch {}
 })
 
+watch(isEncomenda, async (newVal) => {
+    const rawCep = (cep.value?.cep || '').toString().replace(/\D/g, '')
+    if (rawCep.length !== 8) return
+    const stockVal = newVal ? false : (local.value === 2 ? props.product.stock_caxias : props.product.stock)
+    const result = await accountStore.calculaFrete({
+        cep: rawCep,
+        peso: props.product.weight,
+        valor: props.product.price,
+        encomenda: stockVal,
+        object: 'product-qty'
+    })
+    if (!result.data?.cep?.message) {
+        cep.value = result.data
+    }
+})
+
 function handleQuantityChange(val: number | string) {
     quantity.value = val
     if (maxQuantity.value !== undefined && Number(val) > maxQuantity.value) {
-        stockError.value = `Disponível: ${maxQuantity.value}`
-        quantity.value = maxQuantity.value
+        stockError.value = `Disponível em estoque: ${maxQuantity.value}`
+        if (props.product.status === 3) {
+            quantity.value = maxQuantity.value
+        }
     } else {
         stockError.value = ''
     }
@@ -350,13 +375,16 @@ function setCEP(evt: any) {
     cep.value = evt
 }
 
-function addToCart(): Promise<void> {
+async function addToCart(): Promise<void> {
     if (typeof quantity.value === 'string' || quantity.value < 1) {
-        return Promise.resolve()
+        return
     }
-    const qty = maxQuantity.value !== undefined
+    const isEsgotado = (props.product as any).status === 3
+    const qty = (isEsgotado && maxQuantity.value !== undefined)
         ? Math.min(Number(quantity.value), maxQuantity.value)
         : Number(quantity.value)
-    return cartStore.add({ product: props.product, quantity: qty, local: local.value })
+    await cartStore.add({ product: props.product, quantity: qty, local: local.value })
+    tracking.addToCart([toGA4Item(props.product, qty, props.product.price)], props.product.price * qty)
+    pixel.addToCart(props.product.id, props.product.name, props.product.price, qty)
 }
 </script>

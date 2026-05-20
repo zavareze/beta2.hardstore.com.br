@@ -185,7 +185,7 @@
                                                 </td>
                                                 <td>Sedex <span v-if="account.calculoFrete.fretes.pac.gratis" class="badge text-bg-success">50% OFF</span></td>
                                                 <td>{{ price(account.calculoFrete.fretes.sedex.valor) }}</td>
-                                                <td>{{ account.calculoFrete.estimativa }}</td>
+                                                <td><span v-if="isEncomenda" class="badge text-bg-warning me-1">ENCOMENDA</span>{{ account.calculoFrete.estimativa }}</td>
                                             </tr>
                                             <tr v-if="account.calculoFrete.fretes.pac"
                                             style="cursor: pointer"
@@ -205,7 +205,7 @@
                                                 </td>
                                                 <td>PAC <span v-if="account.calculoFrete.fretes.pac.gratis" class="badge text-bg-success">Grátis</span></td>
                                                 <td>{{ price(account.calculoFrete.fretes.pac.valor) }}</td>
-                                                <td>{{ account.calculoFrete.estimativa_2 }}</td>
+                                                <td><span v-if="isEncomenda" class="badge text-bg-warning me-1">ENCOMENDA</span>{{ account.calculoFrete.estimativa_2 }}</td>
                                             </tr>
                                             <tr v-if="account.calculoFrete.fretes.motoboy"
                                             style="cursor: pointer"
@@ -299,12 +299,14 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { useAccountStore } from '~/stores/account'
+import { useEcommerceTracking, toGA4Item } from '~/composables/useEcommerceTracking'
 import Cross10Svg from '~/svg/cross-10.svg'
 
 const cartStore = useCartStore()
 const account = useAccountStore()
 const url = useUrl()
 const { price } = usePrice()
+const tracking = useEcommerceTracking()
 
 useHead({ title: 'Carrinho' })
 
@@ -323,6 +325,11 @@ let updateTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(async () => {
     await validateCartQuantities()
+
+    if (cartStore.items.length) {
+        const ga4Items = cartStore.items.map(i => toGA4Item(i.product, i.quantity, i.price))
+        tracking.viewCart(ga4Items, cartStore.subtotal)
+    }
 
     if (account.cep === '')
         setTimeout(() => {
@@ -404,11 +411,14 @@ function weight () {
 
 function stock () {
     for (let i=0;i<cartStore.items.length;i++) {
-        if (!cartStore.items[i].product.stock)
-            return false
+        const item = cartStore.items[i] as any
+        const hasStock = item.local === 2 ? item.product.stock_caxias : item.product.stock
+        if (!hasStock) return false
+        if (item.availableStock !== undefined && item.quantity > item.availableStock && item.product.status !== 3) return false
     }
     return true
 }
+const isEncomenda = computed(() => !stock())
 
 function handleChangeQuantity (item: any, quantity: number) {
     const itemQuantity = quantities.value.find(x => x.itemId === item.id)
@@ -430,7 +440,9 @@ function getItemQuantity (item: any) {
 }
 
 async function remover (item) {
+    const ga4Item = toGA4Item(item.product, item.quantity, item.price)
     await cartStore.remove(item.id)
+    tracking.removeFromCart([ga4Item], item.price * item.quantity)
     calculaFrete()
 }
 
@@ -441,6 +453,10 @@ async function updateQuantities (showLoading = true) {
             ...x,
             value: typeof x.value === 'string' ? parseFloat(x.value) : x.value
         })))
+        quantities.value = quantities.value.map(x => {
+            const storeItem = cartStore.items.find(i => i.id === x.itemId)
+            return storeItem ? { ...x, value: storeItem.quantity } : x
+        })
         calculaFrete()
     } finally {
         if (showLoading) isUpdatingQuantities.value = false

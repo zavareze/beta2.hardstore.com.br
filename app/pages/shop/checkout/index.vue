@@ -112,7 +112,7 @@
                                                         </div>
                                                     </div>
                                                     <br>
-                                                    <p v-show="address.estimativa" style="color: red; font-weight: 400; font-size: smalll;">
+                                                    <p v-show="address.estimativa" style="color: red; font-weight: 400; font-size: small;">
                                                         Você receberá na {{ address.estimativa }}
                                                     </p>
                                                     <div v-show="address.error" class="alert alert-danger mb-3">
@@ -145,11 +145,11 @@
                                                     required
                                                     :class="{ 'is-invalid': fieldError == 'nome' && messageError }"
                                                 >
-                                                <label for="checkout-nome">Nome</label>
+                                                <label for="checkout-nome">Nome Completo</label>
                                                 <div class="invalid-feedback">Você deve informar seu Nome Completo</div>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group d-none">
                                             <div class="form-floating">
                                                 <select id="checkout-tipo-pessoa" v-model="user.tipo_pessoa" class="form-select" @change="checkTipoPessoa">
                                                     <option value="1">Pessoa Física</option>
@@ -558,9 +558,9 @@
                                                     <span class="input-check__body">
                                                         <input
                                                             id="checkout-terms"
+                                                            v-model="termsAccepted"
                                                             class="input-check__input"
                                                             type="checkbox"
-                                                            checked
                                                         >
                                                         <span class="input-check__box" />
                                                         <Check9x7Svg class="input-check__icon" />
@@ -606,7 +606,10 @@
                     <p class="text-muted small mb-4">Para continuar sua compra, acesse sua conta ou recupere sua senha abaixo.</p>
                     <div class="d-flex flex-column gap-2">
                         <a href="/account/login?redirect=/shop/checkout" class="btn btn-primary btn-lg">Entrar na minha conta</a>
-                        <button type="button" class="btn btn-outline-secondary" @click.prevent="recuperarSenha()">Esqueci minha senha</button>
+                        <button type="button" class="btn btn-outline-secondary" :disabled="loadingRecuperarSenha" @click.prevent="recuperarSenha()">
+                            <span v-if="loadingRecuperarSenha" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+                            Esqueci minha senha
+                        </button>
                     </div>
                 </div>
             </AppModal>
@@ -617,6 +620,8 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { useAccountStore } from '~/stores/account'
+import { useEcommerceTracking, toGA4Item } from '~/composables/useEcommerceTracking'
+import { usePixelTracking } from '~/composables/usePixelTracking'
 import accountApi from '~/api/account'
 import Check9x7Svg from '~/svg/check-9x7.svg'
 
@@ -625,6 +630,8 @@ const account = useAccountStore()
 const url = useUrl()
 const router = useRouter()
 const { price } = usePrice()
+const tracking = useEcommerceTracking()
+const pixel = usePixelTracking()
 
 useHead({ title: 'Fechar Compra' })
 
@@ -684,8 +691,10 @@ const payments = ref([
     { value: 4, text: 'ELO', src: 'https://static.hardstore.com.br/images/logo_elo.png' }
 ])
 const selected = ref({ value: null, text: 'Selecione a Bandeira' })
+const termsAccepted = ref(true)
 const cepError = ref('')
 const email = ref('')
+const loadingRecuperarSenha = ref(false)
 const selectedAddress = ref(Object.assign({ error: '' }, getInitialAddress()))
 const numeroRef = ref<HTMLInputElement | null>(null)
 
@@ -723,6 +732,9 @@ function setUF (uf: string) {
 }
 
 function onDocumentInput () {
+    const raw = user.value.document.replace(/\D/g, '')
+    if (raw.length > 11) user.value.tipo_pessoa = '2'
+    else if (raw.length <= 11 && user.value.tipo_pessoa === '2') user.value.tipo_pessoa = '1'
     formatDocument()
     if (fieldError.value === 'document') validateDocumentField(false)
 }
@@ -1027,7 +1039,6 @@ function calculaFrete () {
             account.setCEP(result.data.cep.cep)
             user.value.cidade = result.data.cep.city
             setUF(result.data.cep.state)
-            user.value.uf = result.data.cep.state
             user.value.bairro = result.data.cep.neighborhood
             user.value.logradouro = result.data.cep.street
             switch (cartStore.shippingMethod * 1) {
@@ -1047,7 +1058,25 @@ function calculaFrete () {
 
 function checkForm (event) {
     event.target.classList.add('was-validated')
+    if (!termsAccepted.value) {
+        useNuxtApp().$notify?.({
+            group: 'api',
+            type: 'error text-error',
+            text: 'Você deve aceitar os Termos e Condições para continuar.',
+            duration: 5000
+        })
+        return
+    }
     if (!account.logged && !validateCheckoutForm()) return
+    if (account.logged && !selectedAddress.value?.id) {
+        useNuxtApp().$notify?.({
+            group: 'api',
+            type: 'error text-error',
+            text: 'Selecione um endereço de entrega para continuar.',
+            duration: 5000
+        })
+        return
+    }
     createOrder()
 }
 
@@ -1099,6 +1128,8 @@ function createOrder () {
 }
 
 function recuperarSenha () {
+    if (loadingRecuperarSenha.value) return
+    loadingRecuperarSenha.value = true
     account.recoverPassword(email.value).then((result) => {
         useModal().hide('modalRecuperarSenha')
         useNuxtApp().$notify?.({
@@ -1106,6 +1137,8 @@ function recuperarSenha () {
             text: 'Recuperação de senha solicitada com sucesso!',
             duration: 5000
         })
+    }).finally(() => {
+        loadingRecuperarSenha.value = false
     })
 }
 
@@ -1148,6 +1181,30 @@ function buscaCEP (noFocus?: boolean) {
     }
 }
 
+const PAYMENT_LABELS: Record<number, string> = {
+    1: 'Boleto',
+    2: 'Banricompras',
+    3: 'Cartão de Crédito',
+    4: 'Pix'
+}
+
+const SHIPPING_LABELS: Record<number, string> = {
+    1: 'SEDEX',
+    2: 'PAC',
+    3: 'Motoboy'
+}
+
+watch(currentPayment, (val) => {
+    const ga4Items = cartStore.items.map(i => toGA4Item(i.product, i.quantity, i.price))
+    tracking.addPaymentInfo(ga4Items, cartStore.total, PAYMENT_LABELS[val] ?? String(val))
+})
+
+watch(() => cartStore.shippingMethod, (val) => {
+    if (!cartStore.shipping) return
+    const ga4Items = cartStore.items.map(i => toGA4Item(i.product, i.quantity, i.price))
+    tracking.addShippingInfo(ga4Items, cartStore.total, SHIPPING_LABELS[val] ?? String(val))
+})
+
 onMounted(async () => {
     if (!account.logged) {
         calculaFrete()
@@ -1158,33 +1215,13 @@ onMounted(async () => {
         } catch {
         }
     }
-    const items: any[] = []
-    const products: any[] = []
-    cartStore.items.map(item => {
-        items.push({
-            item_name: item.product.name,
-            item_id: item.product.id,
-            price: item.price,
-            quantity: item.quantity
-        })
-        products.push({
-            name: item.product.name,
-            id: item.product.id,
-            price: item.price,
-            quantity: item.quantity
-        })
-    })
-    // @ts-ignore
-    useNuxtApp().$gtm?.push({ ecommerce: null })
-    // @ts-ignore
-    useNuxtApp().$gtm?.push({
-        event: 'checkout',
-        ecommerce: {
-            checkout: {
-                products
-            }
-        }
-    })
+    const ga4Items = cartStore.items.map(i => toGA4Item(i.product, i.quantity, i.price))
+    tracking.beginCheckout(ga4Items, cartStore.total)
+    pixel.initiateCheckout(
+        cartStore.items.map(i => String(i.product.id)),
+        cartStore.total,
+        cartStore.quantity
+    )
 })
 
 onBeforeMount(() => {
@@ -1206,19 +1243,10 @@ ul {
   padding: 0;
 }
 li {
-  display: absolute;
   margin: 0 10px;
   z-index: 10;
 }
 a {
   color: #42b983;
-}
-.back {
-  background-image: linear-gradient(
-      to bottom,
-      rgba(255, 255, 0, 0.5),
-      rgba(0, 0, 255, 0.5)
-    ),
-    url("https://mdn.mozillademos.org/files/7693/catfront.png");
 }
 </style>

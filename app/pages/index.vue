@@ -1,5 +1,6 @@
 <template>
     <div>
+        <h1 class="visually-hidden">Hardstore Informática</h1>
         <BlockSlideshow layout="with-departments" :slides-data="homeHeroSlides" />
 
         <BlockFeatures />
@@ -161,7 +162,34 @@ async function loadColumns () {
     ]
 }
 
-useHead({ title: '' })
+useHead(computed(() => ({
+    title: '',
+    script: [
+        {
+            key: 'schema-org-website',
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'WebSite',
+                '@id': 'https://www.hardstore.com.br/#website',
+                url: 'https://www.hardstore.com.br/',
+                name: 'Hardstore',
+                alternateName: 'Hardstore Informática',
+                publisher: {
+                    '@id': 'https://www.hardstore.com.br/#organization'
+                },
+                potentialAction: {
+                    '@type': 'SearchAction',
+                    target: {
+                        '@type': 'EntryPoint',
+                        urlTemplate: 'https://www.hardstore.com.br/shop/catalog?filter_search={search_term_string}'
+                    },
+                    'query-input': 'required name=search_term_string'
+                }
+            })
+        }
+    ]
+})))
 
 const [
     ,

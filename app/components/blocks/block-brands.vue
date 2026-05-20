@@ -13,6 +13,8 @@
                                 loading="lazy"
                                 alt=""
                                 class="mx-auto"
+                                width="100"
+                                height="40"
                                 style="max-height: 40px; max-width: 100px"
                                 @error="onBrandImageError"
                             >

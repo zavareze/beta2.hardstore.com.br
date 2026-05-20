@@ -8,9 +8,9 @@
                     </div>
                     <div class="col-6 col-md-3 col-lg-2">
                         <div class="site-footer__widget footer-links">
-                            <h5 class="footer-links__title">
+                            <h2 class="footer-links__title">
                                 Informações
-                            </h5>
+                            </h2>
                             <ul class="footer-links__list">
                                 <li class="footer-links__item"><NuxtLink to="/site/about-us" class="footer-links__link">Quem Somos</NuxtLink></li>
                                 <li class="footer-links__item"><NuxtLink to="/site/contato" class="footer-links__link">Nossas Lojas</NuxtLink></li>
@@ -22,9 +22,9 @@
                     </div>
                     <div class="col-6 col-md-3 col-lg-2">
                         <div class="site-footer__widget footer-links">
-                            <h5 class="footer-links__title">
+                            <h2 class="footer-links__title">
                                 Links Rápidos
-                            </h5>
+                            </h2>
                             <ul class="footer-links__list">
                                 <li class="footer-links__item" v-show="isMounted && accountStore.isLogged"><NuxtLink :to="url.accountDashboard()" class="footer-links__link">Dashboard</NuxtLink></li>
                                 <li class="footer-links__item" v-show="isMounted && accountStore.isLogged"><NuxtLink :to="url.accountOrders()" class="footer-links__link">Meus Pedidos</NuxtLink></li>
@@ -49,8 +49,8 @@
                     <!-- copyright / end -->
                 </div>
                 <div class="site-footer__payments">
-                    <img src="/images/visa-mastercard.png" loading="lazy" alt="" style="max-height: 24px;" />
-                    <img src="/images/paypal-logo.png" loading="lazy" alt="" style="max-height: 40px;" />
+                    <img src="/images/visa-mastercard.png" loading="lazy" alt="" width="75" height="24" style="max-height: 24px; width: auto;" />
+                    <img src="/images/paypal-logo.png" loading="lazy" alt="" width="71" height="40" style="max-height: 40px; width: auto;" />
                 </div>
             </div>
         </div>

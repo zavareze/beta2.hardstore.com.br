@@ -11,7 +11,7 @@
                 >
                     <div class=" category-card__body">
                         <div class=" category-card__image">
-                            <AppLink :to="'/shop/'+category.slug">
+                            <AppLink :to="'/shop/'+category.slug" :aria-label="'Ver categoria ' + category.name">
                                 <!--suppress HtmlUnknownTarget -->
                                 <img :src="category.image" alt="" width="130" height="176">
                             </AppLink>

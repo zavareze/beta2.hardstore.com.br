@@ -1,8 +1,8 @@
 <template>
     <div class="site-footer__widget footer-newsletter">
-        <h5 class="footer-newsletter__title">
+        <h2 class="footer-newsletter__title">
             Newsletter
-        </h5>
+        </h2>
         <div class="footer-newsletter__text">
              Assine nossa newsletter e receba semanalmente nossas novidades e promoções exclusivas!
         </div>

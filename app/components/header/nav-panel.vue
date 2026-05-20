@@ -44,13 +44,13 @@
                         </Indicator>
                     </SearchScope>
 
-                    <Indicator to="/shop/compare" :value="compareValue" >
+                    <Indicator to="/shop/compare" :value="compareValue" aria-label="Comparar produtos">
                         <template v-slot:icon>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class=""><path d="M9 15H7c-.6 0-1-.4-1-1V2c0-.6.4-1 1-1h2c.6 0 1 .4 1 1v12c0 .6-.4 1-1 1zM1 9h2c.6 0 1 .4 1 1v4c0 .6-.4 1-1 1H1c-.6 0-1-.4-1-1v-4c0-.6.4-1 1-1zM15 5h-2c-.6 0-1 .4-1 1v8c0 .6.4 1 1 1h2c.6 0 1-.4 1-1V6c0-.6-.4-1-1-1z"></path></svg>
                         </template>
                     </Indicator>
 
-                    <Indicator :to="url.wishlist()" :value="wishlistValue">
+                    <Indicator :to="url.wishlist()" :value="wishlistValue" aria-label="Lista de desejos">
                         <template v-slot:icon>
                             <Heart20Svg />
                         </template>
@@ -62,6 +62,7 @@
                         :value="cartValue"
                         trigger="click"
                         :close-delay-on-mouse-leave="500"
+                        aria-label="Carrinho de compras"
                         @buttonClick="onCartClick"
                     >
                         <template v-slot:icon>
@@ -76,6 +77,7 @@
                         :to="url.accountDashboard()"
                         trigger="click"
                         :close-delay-on-mouse-leave="500"
+                        aria-label="Minha conta"
                     >
                         <template v-slot:icon>
                             <Person20Svg />

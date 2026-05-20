@@ -52,7 +52,7 @@ function normalizeImagePath(value: string | null) {
     return path
 }
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     const pageKey = normalizePageKey(getQuery(event).page)
 
     const [rows] = await pool.query(
@@ -115,4 +115,7 @@ export default defineEventHandler(async (event) => {
         message: '',
         data: payload
     }
+}, {
+    maxAge: 300,
+    getKey: (event) => `banners-${normalizePageKey(getQuery(event).page)}`
 })

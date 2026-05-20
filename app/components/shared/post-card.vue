@@ -1,9 +1,9 @@
 <template>
     <div :class="cardClasses">
         <div class="post-card__image">
-            <AppLink :to="'https://www.youtube.com/watch?v='+post.id" target="_blank">
+            <AppLink :to="'https://www.youtube.com/watch?v='+post.id" target="_blank" :aria-label="'Assistir: ' + post.title">
                 <!--suppress HtmlUnknownTarget -->
-                <img :src="post.thumbnail" loading="lazy" alt="">
+                <img :src="post.thumbnail" loading="lazy" alt="" width="480" height="360">
             </AppLink>
         </div>
         <div class="post-card__info">
@@ -19,8 +19,9 @@
                 {{ post.description }}
             </div>
             <div class="post-card__read-more">
-                <AppLink :to="'https://www.youtube.com/watch?v='+post.id" class="btn btn-secondary btn-sm" target="_blank">
+                <AppLink :to="'https://www.youtube.com/watch?v='+post.id" class="btn btn-secondary btn-sm" target="_blank" :aria-label="'Assistir ao vídeo: ' + post.title">
                     Veja mais
+                    <span class="visually-hidden"> sobre {{ post.title }}</span>
                 </AppLink>
             </div>
         </div>

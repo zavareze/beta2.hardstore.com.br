@@ -8,3 +8,23 @@
     bottom: 0;
     left: 0;
 }
+
+// Mantém aparência de h5 nos títulos do rodapé mesmo com tag h2 (correção de hierarquia semântica)
+.footer-contacts__title,
+.footer-newsletter__title,
+.footer-links__title {
+    font-size: 0.83em;
+    font-weight: bold;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

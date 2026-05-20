@@ -15,9 +15,9 @@
             <!-- desktop site__header / end -->
 
             <!-- site__body -->
-            <div class="site__body" style="background-image: url(/); background-repeat: no-repeat; background-position:top; background-position-y: -264px; background-attachment: fixed;">
+            <main class="site__body" style="background-image: url(/); background-repeat: no-repeat; background-position:top; background-position-y: -264px; background-attachment: fixed;">
                 <slot />
-            </div>
+            </main>
             <!-- site__body / end -->
 
             <!-- site__footer -->

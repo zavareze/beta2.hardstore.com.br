@@ -2,6 +2,7 @@
     <Teleport to="body">
         <div
             v-if="isVisible"
+            ref="modalRef"
             class="modal fade show"
             style="display: block"
             tabindex="-1"
@@ -32,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 
 const props = withDefaults(defineProps<{
     id: string
@@ -52,6 +53,17 @@ const emit = defineEmits<{
 
 const modal = useModal()
 const isVisible = computed(() => modal.isOpen(props.id))
+const modalRef = ref<HTMLElement | null>(null)
+
+watch(isVisible, async (val) => {
+    if (val) {
+        await nextTick()
+        if (modalRef.value) {
+            modalRef.value.scrollTop = 0
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+})
 
 function close() {
     modal.hide(props.id)

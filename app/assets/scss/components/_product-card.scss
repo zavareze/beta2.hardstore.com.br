@@ -60,12 +60,14 @@
 .product-card__vendor {
     text-align: center;
     padding: 0 18px 18px;
+    min-height: 58px; // reserva espaço antes da lazy img carregar (40px img + 18px padding-bottom)
 
     img {
         display: inline-block;
         max-height: 40px;
         max-width: 110px;
         height: auto;
+        object-fit: contain;
     }
 }
 .product-card__quickview {

@@ -90,9 +90,19 @@ export const useCartStore = defineStore('cart', {
         async add(payload: CartAddPayload) {
             const result = await shopApi.checkAvaiability(payload.product.id)
             if (result.data?.length > 0) {
-                if (payload.quantity && payload.quantity > result.data[0].stock) {
-                    payload.quantity = result.data[0].stock
-                    payload.error = 'Disponível ' + result.data[0].stock
+                const availableStock = result.data[0].stock
+                if ((payload.product as any).status === 3) {
+                    const existingIndex = findItemIndex(this.items, payload.product, payload.options || [])
+                    const existingQty = existingIndex !== -1 ? this.items[existingIndex].quantity : 0
+                    const maxAdd = Math.max(0, availableStock - existingQty)
+                    if ((payload.quantity || 1) > maxAdd) {
+                        if (maxAdd <= 0) {
+                            useNuxtApp().$notify?.({ type: 'error', text: `Estoque esgotado: máximo ${availableStock} unidade${availableStock !== 1 ? 's' : ''}` })
+                            return
+                        }
+                        payload.quantity = maxAdd
+                        payload.error = 'Disponível: ' + availableStock
+                    }
                 }
             }
 
@@ -145,13 +155,15 @@ export const useCartStore = defineStore('cart', {
             result.data.forEach((item: any) => {
                 const located = this.items.find(x => x.product.id === item.id) as any
                 if (located) {
+                    located.availableStock = item.stock
                     const ppp = payload.find(x => x.itemId === located.id)
-                    if ((located.quantity > item.stock) || (ppp && ppp.value > item.stock)) {
+                    const desiredQty = ppp ? ppp.value : located.quantity
+                    if (desiredQty > item.stock && (located.product as any).status === 3) {
                         if (ppp) {
-                            ppp.error = 'Disponível ' + item.stock
+                            ppp.error = 'Disponível: ' + item.stock
                             ppp.value = item.stock
                         } else {
-                            payload.push({ itemId: located.id, error: 'Disponível ' + item.stock, value: item.stock })
+                            payload.push({ itemId: located.id, error: 'Disponível: ' + item.stock, value: item.stock })
                         }
                     } else if (!ppp) {
                         payload.push({ itemId: located.id, value: located.quantity })
@@ -165,12 +177,18 @@ export const useCartStore = defineStore('cart', {
                 item.quantity = quantity.value
                 ;(item as any).error = quantity.error
                 if ((item as any).error) {
-                    ;(item as any).max = quantity.value
+                    ;(item as any).max = (item as any).availableStock ?? 0
                 } else {
                     delete (item as any).max
                 }
                 item.total = item.price * item.quantity
-                if (!(item.product as any).stock) this.stock = false
+                const correctStock = item.local === 2 ? (item.product as any).stock_caxias : (item.product as any).stock
+                const isOverQty = (item as any).availableStock !== undefined &&
+                    item.quantity > (item as any).availableStock &&
+                    (item.product as any).status !== 3
+                if (!correctStock || isOverQty) {
+                    this.stock = false
+                }
             })
 
             this.quantity = calcQuantity(this.items)

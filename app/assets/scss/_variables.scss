@@ -189,7 +189,7 @@
       $topbar-bg:            #f7f7f7 !default;
       $topbar-shadow:        none    !default;
       $topbar-border-bottom: none    !default;
-      $topbar-font-color:    #737373 !default;
+      $topbar-font-color:    #6b6b6b !default;
 
    // ----------------------------------------
    // -- .topbar-link
@@ -482,7 +482,7 @@
    // ----------------------------------------
       $price-color:     $light-opposite-color !default;
       $price-new-color: #ff2626               !default;
-      $price-old-color: #b3b3b3               !default;
+      $price-old-color: #767676               !default;
 
    // ----------------------------------------
    // -- preloader
@@ -759,7 +759,7 @@
    // ----------------------------------------
    // -- .rating
    // ----------------------------------------
-      $rating-legend-font-color:         #b3b3b3                           !default;
+      $rating-legend-font-color:         #767676                           !default;
       $rating-star-default-color:        #ccc                              !default;
       $rating-star-default-stroke-color: rgba(#000, .08)                   !default;
       $rating-star-active-color:         #ffd333                           !default;

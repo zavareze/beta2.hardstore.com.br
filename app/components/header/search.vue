@@ -45,13 +45,14 @@
                     @keydown.esc="onQueryEscape"
                     style="color:white; background-color:black"
                 >
-                <button class="search__button search__button--type--submit" type="submit">
+                <button class="search__button search__button--type--submit" type="submit" aria-label="Buscar">
                     <Search20Svg />
                 </button>
                 <button
                     v-if="location === 'mobile-header'"
                     class="search__button search__button--type--close"
                     type="button"
+                    aria-label="Fechar busca"
                     @click="onCloseClick"
                 >
                     <Cross20Svg />

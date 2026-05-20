@@ -11,6 +11,7 @@
                     <button
                         type="button"
                         class="mobile-header__menu-button"
+                        aria-label="Abrir menu"
                         @click="mobileMenuStore.open()"
                     >
                         <Menu18x14Svg />
@@ -37,6 +38,7 @@
                             location="mobile-header"
                             class="d-md-none"
                             trigger="click"
+                            aria-label="Buscar produtos"
                             @buttonClick="onSearchClick"
                         >
                             <template v-slot:icon>
@@ -49,6 +51,7 @@
                             :value="wishlistValue"
                             location="mobile-header"
                             class="d-sm-flex d-none"
+                            aria-label="Lista de desejos"
                         >
                             <template v-slot:icon>
                                 <Heart20Svg />
@@ -60,6 +63,7 @@
                             :value="cartValue"
                             :trigger="optionsStore.dropcartType === 'dropdown' ? 'none' : 'click'"
                             location="mobile-header"
+                            aria-label="Carrinho de compras"
                             @buttonClick="onCartClick"
                         >
                             <template v-slot:icon>

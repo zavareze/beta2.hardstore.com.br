@@ -1,11 +1,11 @@
 <template>
-    <div class="site-header" style="color:white; background-color: black; background-image: url(/images/background-blackCarbonFiber.jpg); background-size: 33%;">
+    <div class="site-header" style="color:white; background-color: black; background-image: url(/images/background-blackCarbonFiber.webp); background-size: 33%;">
         <Topbar />
 
         <div v-if="layout === 'default'" class="site-header__middle container">
             <div class="site-header__logo">
                 <AppLink to="/">
-                    <img  width="320" style="margin-right:10px;max-width: 250px;">
+                    <img src="/images/logo-hardstore2026.webp" alt="Hardstore" width="500" height="133" style="margin-right:10px;max-width:250px;height:auto;">
                 </AppLink>
             </div>
             <div class="site-header__search">

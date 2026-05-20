@@ -8,9 +8,13 @@
 <script setup lang="ts">
 import shopApi from '~/api/shop'
 import { useShopStore } from '~/stores/shop'
+import { useEcommerceTracking, toGA4Item } from '~/composables/useEcommerceTracking'
+import { usePixelTracking } from '~/composables/usePixelTracking'
 
 const route = useRoute()
 const shop = useShopStore()
+const tracking = useEcommerceTracking()
+const pixel = usePixelTracking()
 
 const { data: product } = await useAsyncData(`shop-product-${route.params.slug}`, async () => {
     try {
@@ -23,26 +27,30 @@ const { data: product } = await useAsyncData(`shop-product-${route.params.slug}`
 onMounted(() => {
     if (product.value) {
         shop.fetchViewed(product.value)
+        tracking.viewItem(toGA4Item(product.value))
+        pixel.viewContent(product.value.id, product.value.name, product.value.price)
     }
 })
+
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 
 const description = computed(() => {
     if (!product.value) return ''
     let desc = ''
-    if (product.value.resumo)
+    if (product.value.resumo && product.value.resumo.length > 0)
         desc += product.value.resumo.join(', ')
-    if (product.value.caracteristics != '')
+    if (product.value.caracteristics)
         desc += ' ' + product.value.caracteristics
-    if (product.value.description != '')
+    if (product.value.description)
         desc += ' ' + product.value.description
-    return desc
+    return stripHtml(desc).substring(0, 5000)
 })
 
 const sku = computed(() => {
     if (!product.value) return ''
     if (product.value.gtins && product.value.gtins.length > 0)
         return product.value.gtins[0].gtin
-    return ''
+    return String(product.value.id)
 })
 
 const brand = computed(() => {
@@ -53,63 +61,102 @@ const brand = computed(() => {
 })
 
 const availability = computed(() => {
-    if (!product.value) return 'https://schema.org/Discontinued'
-    if (product.value.stock)
+    if (!product.value) return 'https://schema.org/OutOfStock'
+    if (product.value.stock || product.value.stock_caxias)
         return 'https://schema.org/InStock'
-    else if (product.value.stock_caxias)
-        return 'https://schema.org/InStock'
-    else if (product.value.mensagem_encomenda === 3)
-        return 'https://schema.org/OutOfStock'
-    else if (product.value.mensagem_encomenda != 5)
-        return 'https://schema.org/InStoreOnly'
-    return 'https://schema.org/Discontinued'
+    return 'https://schema.org/OutOfStock'
 })
 
 const breadcrumb = computed(() => {
-    if (!product.value || !product.value.tags_categoria) return []
-    return product.value.tags_categoria.map((element: any, i: number) => ({
+    if (!product.value) return []
+    const items: any[] = [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.hardstore.com.br/' }
+    ]
+    const cats = [...(product.value.tags_categoria || [])].reverse()
+    cats.forEach((cat: any, i: number) => {
+        items.push({
+            '@type': 'ListItem',
+            position: i + 2,
+            name: cat.name,
+            item: 'https://www.hardstore.com.br/shop/' + cat.slug
+        })
+    })
+    items.push({
         '@type': 'ListItem',
-        position: i + 1,
-        item: {
-            '@id': 'https://www.hardstore.com.br/shop/' + element.slug,
-            name: element.name
-        }
-    }))
+        position: items.length + 1,
+        name: product.value.name
+    })
+    return items
 })
 
-useHead({
-    script: [
+const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+useHead(computed(() => ({
+    script: product.value?.id ? [
         {
             type: 'application/ld+json',
-            children: JSON.stringify([
-                {
-                    '@context': 'https://schema.org',
-                    '@type': 'BreadcrumbList',
-                    itemListElement: breadcrumb.value
-                },
-                {
-                    '@context': 'https://schema.org/',
-                    '@type': 'Product',
-                    name: product.value?.name,
-                    image: 'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.value?.id + '/1280x960/1.webp',
-                    description: description.value,
-                    mpn: product.value?.pn,
-                    sku: sku.value,
-                    brand: { '@type': 'Thing', name: brand.value },
-                    offers: {
-                        '@type': 'Offer',
-                        priceCurrency: 'BRL',
-                        price: product.value?.price,
-                        url: 'https://www.hardstore.com.br/shop/products/' + product.value?.slug,
-                        priceValidUntil: new Date().toISOString().substring(0, 10),
-                        itemCondition: 'http://schema.org/New',
-                        availability: availability.value,
-                        seller: { '@type': 'Organization', name: 'Hardstore Informática' }
+            innerHTML: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: breadcrumb.value
+            })
+        },
+        {
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'Product',
+                name: product.value.name,
+                image: [1, 2, 3, 4, 5].map(n => `https://cdn-hardstore.s3-sa-east-1.amazonaws.com/${product.value!.id}/1280x960/${n}.webp`),
+                description: description.value,
+                sku: sku.value,
+                ...(product.value.pn ? { mpn: product.value.pn } : {}),
+                brand: { '@type': 'Brand', name: brand.value },
+                offers: {
+                    '@type': 'Offer',
+                    priceCurrency: 'BRL',
+                    price: String(product.value.price),
+                    url: 'https://www.hardstore.com.br/shop/products/' + product.value.slug,
+                    priceValidUntil,
+                    itemCondition: 'https://schema.org/NewCondition',
+                    availability: availability.value,
+                    seller: { '@id': 'https://www.hardstore.com.br/#organization' },
+                    shippingDetails: {
+                        '@type': 'OfferShippingDetails',
+                        shippingDestination: {
+                            '@type': 'DefinedRegion',
+                            addressCountry: 'BR'
+                        },
+                        deliveryTime: {
+                            '@type': 'ShippingDeliveryTime',
+                            handlingTime: {
+                                '@type': 'QuantitativeValue',
+                                minValue: 0,
+                                maxValue: 1,
+                                unitCode: 'DAY'
+                            },
+                            transitTime: {
+                                '@type': 'QuantitativeValue',
+                                minValue: 1,
+                                maxValue: 7,
+                                unitCode: 'DAY'
+                            }
+                        }
                     },
-                    aggregateRating: { '@type': 'AggregateRating', ratingValue: '5', reviewCount: '1' }
+                    hasMerchantReturnPolicy: {
+                        '@type': 'MerchantReturnPolicy',
+                        applicableCountry: 'BR',
+                        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                        merchantReturnDays: 7,
+                        returnMethod: [
+                            'https://schema.org/ReturnByMail',
+                            'https://schema.org/ReturnInStore'
+                        ],
+                        returnFees: 'https://schema.org/FreeReturn'
+                    }
                 }
-            ])
+            })
         }
-    ]
-})
+    ] : []
+})))
 </script>

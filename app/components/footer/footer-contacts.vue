@@ -1,8 +1,8 @@
 <template>
     <div class="site-footer__widget footer-contacts">
-        <h5 class="footer-contacts__title">
+        <h2 class="footer-contacts__title">
             Matriz - Porto Alegre
-        </h5>
+        </h2>
         <ul class="footer-contacts__contacts">
             <li>
                 <IconMapPin class="footer-contacts__icon" />
@@ -23,9 +23,9 @@
             </li>
         </ul>
         <div class="mt-3">&nbsp;</div>
-        <h5 class="footer-contacts__title">
+        <h2 class="footer-contacts__title">
             Filial - Caxias do Sul
-        </h5>
+        </h2>
         <ul class="footer-contacts__contacts">
             <li>
                 <IconMapPin class="footer-contacts__icon" />

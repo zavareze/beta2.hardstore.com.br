@@ -9,20 +9,36 @@
                 <div v-if="layout === 'with-departments'" class="col-lg-3 d-none d-lg-block" />
                 <div :class="['col-12', { 'col-lg-9': layout === 'with-departments' }]">
                     <div class="block-slideshow__body">
-                        <Carousel :options="carouselOptions">
-                            <CarouselSlide v-for="(slide, index) in slidesToRender" :key="index">
-                                <AppLink class="block-slideshow__slide" :to="slide.url">
-                                    <div
-                                        class="block-slideshow__slide-image block-slideshow__slide-image--desktop"
-                                        :style="{ backgroundImage: getDesktopImage(slide) }"
-                                    />
-                                    <div
-                                        class="block-slideshow__slide-image block-slideshow__slide-image--mobile"
-                                        :style="{ backgroundImage: getMobileImage(slide) }"
-                                    />
-                                </AppLink>
-                            </CarouselSlide>
-                        </Carousel>
+                        <ClientOnly>
+                            <Carousel :options="carouselOptions">
+                                <CarouselSlide v-for="(slide, index) in slidesToRender" :key="index">
+                                    <AppLink class="block-slideshow__slide" :to="slide.url" :aria-label="slide.title || 'Ver oferta'">
+                                        <div
+                                            class="block-slideshow__slide-image block-slideshow__slide-image--desktop"
+                                            :style="{ backgroundImage: getDesktopImage(slide) }"
+                                        />
+                                        <div
+                                            class="block-slideshow__slide-image block-slideshow__slide-image--mobile"
+                                            :style="{ backgroundImage: getMobileImage(slide) }"
+                                        />
+                                    </AppLink>
+                                </CarouselSlide>
+                            </Carousel>
+                            <template #fallback>
+                                <div v-if="slidesToRender[0]" style="height: 100%;">
+                                    <AppLink class="block-slideshow__slide" :to="slidesToRender[0].url" :aria-label="slidesToRender[0].title || 'Ver oferta'" style="height: 100%;">
+                                        <div
+                                            class="block-slideshow__slide-image block-slideshow__slide-image--desktop"
+                                            :style="{ backgroundImage: getDesktopImage(slidesToRender[0]) }"
+                                        />
+                                        <div
+                                            class="block-slideshow__slide-image block-slideshow__slide-image--mobile"
+                                            :style="{ backgroundImage: getMobileImage(slidesToRender[0]) }"
+                                        />
+                                    </AppLink>
+                                </div>
+                            </template>
+                        </ClientOnly>
                     </div>
                 </div>
             </div>

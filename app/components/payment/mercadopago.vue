@@ -205,19 +205,20 @@ function sendToServer() {
             }
         }
         accountStore.createMercadoPago(data).then((res: any) => {
-            console.log('account/createMercadoPago', res)
-            if (res.status === 'approved') {
+            const result = res.data
+            if (result.status === 'approved') {
                 router.push('/shop/checkout/success')
             } else {
                 btnSubmit.value = true
-                error.value = res.mensagem
+                error.value = result.mensagem || 'Pagamento não aprovado. Verifique os dados e tente novamente.'
             }
         }).catch((result: any) => {
-            error.value = result.message
+            const msg = result.response?.data?.message || result.message || 'Erro ao processar o pagamento.'
+            error.value = msg
             useNuxtApp().$notify?.({
                 group: 'api',
                 type: 'error',
-                text: result.message,
+                text: msg,
                 duration: 5000
             })
             btnSubmit.value = true

@@ -27,7 +27,7 @@
                         :class="{ 'is-invalid': accountStore.hasError }"
                         @keyup="change()"
                     />
-                    <a href="#" @click.prevent="useModal().show('modalForgotPassword')" class="account-menu__form-forgot-link">Esqueceu?</a>
+                    <button type="button" @click="useModal().show('modalForgotPassword')" class="account-menu__form-forgot-link">Esqueceu?</button>
                     <div class="invalid-feedback">
                         {{ accountStore.hasError }}
                     </div>
@@ -85,9 +85,9 @@
             <div class="account-menu__divider" />
             <ul class="account-menu__links">
                 <li>
-                    <a style="cursor: pointer" @click="logout()">
+                    <button class="account-menu__logout" @click="logout()">
                         Sair
-                    </a>
+                    </button>
                 </li>
             </ul>
         </div>
@@ -148,5 +148,15 @@ function logout() {
 .account-menu__form-forgot-link {
     top: 8px;
     bottom: initial;
+    border: none;
+    cursor: pointer;
+}
+.account-menu__logout {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
 }
 </style>

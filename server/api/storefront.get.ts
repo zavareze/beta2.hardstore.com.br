@@ -1,4 +1,4 @@
-import { defineEventHandler, getQuery } from 'h3'
+import { getQuery } from 'h3'
 import { readFile } from 'node:fs/promises'
 import { fetchHardstoreJson } from '../utils/hardstore-upstream'
 
@@ -59,7 +59,7 @@ async function readLocalCategories() {
     return Array.isArray(categories) ? categories : []
 }
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     const query = getQuery(event)
     const resource = getSingleQueryValue(query.resource)
 
@@ -115,4 +115,14 @@ export default defineEventHandler(async (event) => {
 
     console.warn('[storefront] invalid resource', { resource })
     return null
+}, {
+    maxAge: 60,
+    getKey: (event) => {
+        const q = getQuery(event)
+        const resource = getSingleQueryValue(q.resource)
+        const collection = getSingleQueryValue(q.collection)
+        const limit = getSingleQueryValue(q.limit)
+        const category = getSingleQueryValue(q.category)
+        return `storefront-${resource}-${collection}-${limit}-${category}`
+    }
 })

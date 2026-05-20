@@ -1,8 +1,13 @@
 <template>
-    <div>
-        <BlockLoader v-if="isLoading" />
+    <div style="position: relative; min-height: 320px;">
+        <!-- Overlay spinner: position absolute não desloca o layout -->
+        <Transition name="category-fade">
+            <div v-if="isLoading" class="shop-page-category__loader-overlay" aria-hidden="true">
+                <BlockLoader />
+            </div>
+        </Transition>
 
-        <template v-if="!isLoading">
+        <div :style="isLoading ? 'visibility: hidden; pointer-events: none;' : ''">
             <PageHeader :title="pageTitle" :breadcrumb="breadcrumb" />
 
             <CategoryLayout
@@ -36,12 +41,30 @@
                     />
                 </template>
                 <template v-slot:textoSeo>
-                    <div v-if="textoSeo" ref="seoContent" class="categoria-seo" v-html="textoSeo" />
+                    <div v-if="textoSeo" ref="seoContent" class="categoria-seo" style="margin-top: 25px" v-html="textoSeo" />
                 </template>
             </CategoryLayout>
-        </template>
+        </div>
     </div>
 </template>
+
+<style scoped>
+.shop-page-category__loader-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: #fff;
+    min-height: 320px;
+}
+.category-fade-enter-active,
+.category-fade-leave-active {
+    transition: opacity 0.15s ease;
+}
+.category-fade-enter-from,
+.category-fade-leave-to {
+    opacity: 0;
+}
+</style>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
@@ -52,6 +75,7 @@ import type { ICategory } from '~/interfaces/category'
 import { getCategoryParents } from '~/services/helpers'
 import shopApi from '~/api/shop'
 import { useShopStore } from '~/stores/shop'
+import { useEcommerceTracking, toGA4Item } from '~/composables/useEcommerceTracking'
 
 export type ShopPageCategoryColumns = 3 | 4 | 5 | 6;
 export type ShopPageCategoryViewMode = 'grid' | 'grid-with-features' | 'list';
@@ -71,6 +95,7 @@ const props = withDefaults(defineProps<{
 
 const url = useUrl()
 const shopStore = useShopStore()
+const tracking = useEcommerceTracking()
 
 const sidebarIsOpen = ref<boolean>(false)
 const latestProducts = ref<IProduct[]>([])
@@ -202,6 +227,17 @@ watch(query, (q: string) => {
     )
 })
 
+watch(() => shopStore.productsList?.items, (items) => {
+    if (!import.meta.client || !items?.length) return
+    const listId = `category_${shopStore.categorySlug ?? ''}`
+    const listName = shopStore.category?.name ?? ''
+    tracking.viewItemList(
+        items.slice(0, 20).map((p, i) => toGA4Item(p, 1, p.price, i)),
+        listId,
+        listName
+    )
+})
+
 onMounted(() => {
     isMounted.value = true
     if (offcanvas.value === 'mobile') {
@@ -221,6 +257,31 @@ onBeforeUnmount(() => {
     }
 })
 
+const breadcrumbJsonLd = computed(() => {
+    if (!category.value) return null
+    const items: any[] = [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.hardstore.com.br/' }
+    ]
+    getCategoryParents(category.value).forEach((parent, i) => {
+        items.push({
+            '@type': 'ListItem',
+            position: i + 2,
+            name: parent.name,
+            item: 'https://www.hardstore.com.br/shop/' + parent.slug
+        })
+    })
+    items.push({
+        '@type': 'ListItem',
+        position: items.length + 1,
+        name: category.value.name
+    })
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: items
+    }
+})
+
 useHead(() => ({
     title: seoTitle.value,
     link: [
@@ -231,6 +292,9 @@ useHead(() => ({
         { property: 'og:title', content: seoTitle.value },
         { property: 'og:description', content: description.value },
         { property: 'og:url', content: `https://beta2.hardstore.com.br${canonicalPath.value}` },
-    ]
+    ],
+    script: breadcrumbJsonLd.value ? [
+        { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbJsonLd.value) }
+    ] : []
 }))
 </script>

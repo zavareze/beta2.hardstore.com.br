@@ -24,6 +24,8 @@
                                     class="product-image__img"
                                     :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/1280x960/' + image + '.webp'"
                                     alt=""
+                                    width="1280"
+                                    height="960"
                                     data-width="1280"
                                     data-height="960"
                                 >
@@ -31,6 +33,23 @@
                             </a>
                         </div>
                     </CarouselSlide>
+                    <template #fallback>
+                        <div class="product-image product-image--location--gallery">
+                            <a
+                                :href="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/1280x960/' + images[0] + '.webp'"
+                                class="product-image__body"
+                            >
+                                <img
+                                    class="product-image__img"
+                                    :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/1280x960/' + images[0] + '.webp'"
+                                    :alt="product.name || ''"
+                                    width="1280"
+                                    height="960"
+                                    fetchpriority="high"
+                                >
+                            </a>
+                        </div>
+                    </template>
                 </Carousel>
             </div>
             <div class="product-gallery__carousel">
@@ -48,6 +67,9 @@
                                     class="product-image__img product-gallery__carousel-image"
                                     :src="'https://cdn-hardstore.s3-sa-east-1.amazonaws.com/' + product.id + '/1280x960/' + image + '.webp'"
                                     alt=""
+                                    width="1280"
+                                    height="960"
+                                    loading="lazy"
                                 >
                             </span>
                         </a>

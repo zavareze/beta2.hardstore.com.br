@@ -132,6 +132,11 @@ $local-open-transition-duration: .2s;
         height: 36px;
         padding: 0 10px;
     }
+    .indicator__button {
+        min-width: 48px;
+        min-height: 48px;
+        justify-content: center;
+    }
 }
 
 

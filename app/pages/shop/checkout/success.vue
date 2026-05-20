@@ -108,12 +108,16 @@
 <script setup lang="ts">
 import { useAccountStore } from '~/stores/account'
 import { useCartStore } from '~/stores/cart'
+import { useEcommerceTracking, toGA4Item } from '~/composables/useEcommerceTracking'
+import { usePixelTracking } from '~/composables/usePixelTracking'
 import Check100Svg from '~/svg/check-100.svg'
 
 const account = useAccountStore()
 const cartStore = useCartStore()
 const url = useUrl()
 const { price } = usePrice()
+const tracking = useEcommerceTracking()
+const pixel = usePixelTracking()
 
 useHead({ title: 'Pedido efetuado com Sucesso' })
 
@@ -129,36 +133,27 @@ onMounted(() => {
             ringer(order.value.timeout)
     }
 
-    const items: any[] = []
-    const products: any[] = []
-    order.value.products?.map((item) => {
-        items.push({
-            item_name: item.name,
-            item_id: item.id,
-            price: item.price,
-            quantity: item.quantity
-        })
-        products.push({
-            name: item.name,
-            id: item.id,
-            price: item.price,
-            quantity: item.quantity
-        })
-    })
-    // @ts-ignore
-    useNuxtApp().$gtm?.push({ ecommerce: null })
-    // @ts-ignore
-    useNuxtApp().$gtm?.push({
-        event: 'purchase',
-        ecommerce: {
-            transaction_id: order.value.id,
-            currency: 'BRL',
-            value: order.value.valor_total,
-            revenue: order.value.valor_total,
-            shipping: order.value.valor_frete,
-            items
-        }
-    })
+    const orderId = String(order.value.id)
+    const guardKey = `gtm_purchase_${orderId}`
+    if (!sessionStorage.getItem(guardKey) && order.value.products?.length) {
+        sessionStorage.setItem(guardKey, '1')
+        const items = (order.value.products as Array<{ id: number; name: string; price: number; quantity: number }>).map(p =>
+            toGA4Item({ id: p.id, name: p.name, price: p.price }, p.quantity, p.price)
+        )
+        tracking.purchase(
+            orderId,
+            items,
+            order.value.valor_total,
+            0,
+            order.value.valor_frete
+        )
+        pixel.purchase(
+            orderId,
+            order.value.valor_total,
+            (order.value.products as Array<{ id: number }>).map(p => String(p.id)),
+            (order.value.products as Array<unknown>).length
+        )
+    }
 })
 
 function ringer (timeout) {
