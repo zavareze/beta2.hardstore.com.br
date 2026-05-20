@@ -11,24 +11,15 @@ function loadJivositeWidget() {
 }
 
 export default defineNuxtPlugin(() => {
-    let scheduled = false
+    let loaded = false
 
-    const schedule = (delay = 8000) => {
-        if (scheduled) {
-            return
-        }
-
-        scheduled = true
-        window.setTimeout(loadJivositeWidget, delay)
+    const load = () => {
+        if (loaded) return
+        loaded = true
+        loadJivositeWidget()
     }
 
-    if (document.readyState === 'complete') {
-        schedule()
-    } else {
-        window.addEventListener('load', schedule, { once: true })
-    }
-
-    for (const eventName of ['pointerdown', 'keydown', 'touchstart']) {
-        window.addEventListener(eventName, () => schedule(0), { once: true, passive: true })
+    for (const eventName of ['pointerdown', 'keydown', 'touchstart', 'scroll']) {
+        window.addEventListener(eventName, load, { once: true, passive: true })
     }
 })
