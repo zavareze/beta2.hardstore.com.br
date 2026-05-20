@@ -64,6 +64,8 @@ export default defineNuxtConfig({
                 { rel: 'dns-prefetch', href: 'https://www.google-analytics.com' },
                 { rel: 'dns-prefetch', href: 'https://connect.facebook.net' },
                 { rel: 'dns-prefetch', href: 'https://code.jivosite.com' },
+                { rel: 'preconnect', href: 'https://cdn-hardstore.s3-sa-east-1.amazonaws.com' },
+                { rel: 'dns-prefetch', href: 'https://api.hardstore.com.br' },
                 { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
                 { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
                 // Non-blocking font load — avoids render-blocking on first paint
