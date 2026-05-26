@@ -57,11 +57,13 @@
                                         </div>
                                     </td>
                                     <td class="order-list__column-product">
-                                        <AppLink :to="url.product(item)">
+                                        <AppLink :to="url.product(item)" class="order-list__product-name">
                                             {{ item.name }}
                                         </AppLink>
-                                        <span class="order-list__options-label">Modelo:</span>
-                                        <span class="order-list__options-value">{{ item.pn }}</span>
+                                        <div class="order-list__product-meta">
+                                            <span>Cód: {{ item.id }}</span>
+                                            <span v-if="item.pn">P/N: {{ item.pn }}</span>
+                                        </div>
                                     </td>
                                     <td class="order-list__column-quantity" data-title="Quantidade:">
                                         {{ item.quantity }}
@@ -102,6 +104,7 @@
                         </table>
                     </div>
                 </div>
+                <OrderStatus v-if="order.shipping_status" :order="order.shipping_status" />
                 <div class="row mt-3 no-gutters mx-n2">
                     <div class="col-sm-12 col-12 px-2">
                         <AddressCard
@@ -139,5 +142,21 @@ canvas {
   width: 500px;
   background: transparent;
   margin: 0px auto;
+}
+.order-list__product-name {
+    display: block;
+    font-size: 14px;
+    line-height: 1.4;
+}
+.order-list__product-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+.order-list__product-meta span {
+    white-space: nowrap;
 }
 </style>

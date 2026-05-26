@@ -30,6 +30,9 @@ export const useAccountStore = defineStore('account', {
             addressId: ''
         },
         cep: '',
+        isFirstAccess: false,
+        firstAccessEmail: null as string | null,
+        firstAccessDocument: '',
         calculoFrete: {
             error: '',
             estimativa: '',
@@ -54,6 +57,9 @@ export const useAccountStore = defineStore('account', {
             this.selectedAddress = {}
             this.orders = []
             this.order = {}
+            this.isFirstAccess = false
+            this.firstAccessEmail = null
+            this.firstAccessDocument = ''
             accountApi.setToken('')
         },
         init() {
@@ -76,6 +82,14 @@ export const useAccountStore = defineStore('account', {
             try {
                 const result: any = await accountApi.login(payload)
                 if (result.statusCode === 200) {
+                    // Cliente cadastrado pelo sistema sem senha — abre modal de primeiro acesso
+                    if (result.data?.first_access) {
+                        this.isFirstAccess = true
+                        this.firstAccessEmail = result.data.email_masked || null
+                        this.firstAccessDocument = result.data.document || payload.user
+                        this.error = ''
+                        return
+                    }
                     accountApi.setToken(result.data.token)
                     this.token = result.data.token
                     this.user = result.data.user
@@ -139,6 +153,19 @@ export const useAccountStore = defineStore('account', {
         },
         recoverPassword(payload: any) {
             return accountApi.recoverPassword(payload)
+        },
+        async fetchFirstAccess(payload: { document: string; email?: string }) {
+            try {
+                const result: any = await accountApi.firstAccess(payload)
+                return result
+            } catch (e: any) {
+                throw e
+            }
+        },
+        closeFirstAccess() {
+            this.isFirstAccess = false
+            this.firstAccessEmail = null
+            this.firstAccessDocument = ''
         },
         async fetchSearchAccount(payload: any) {
             this.loading = true
@@ -252,14 +279,29 @@ export const useAccountStore = defineStore('account', {
             this.error = result.message
             throw result.response?.data
         },
+        async uploadAvatar(file: File) {
+            if (!this.token) {
+                this.logout()
+                useRouter().replace({ path: '/account/login' })
+                throw new Error('Sessão expirada. Faça login novamente.')
+            }
+            accountApi.setToken(this.token)
+            const result: any = await accountApi.uploadAvatar(file)
+            if (result.status === 200 && result.data?.data?.avatar) {
+                this.user = { ...this.user, avatar: result.data.data.avatar }
+                return result.data
+            }
+            throw new Error(result.data?.message || 'Falha no upload da foto.')
+        },
         isDefaultAddress(address: any) {
-            if (!address?.id) return false
+            if (address?.id === undefined || address?.id === null) return false
 
             const persistedAddressId = this.getPersistedDefaultAddressId()
-            if (persistedAddressId) return String(address.id) === String(persistedAddressId)
+            if (persistedAddressId !== '') return String(address.id) === String(persistedAddressId)
 
             const defaultAddressId = this.user.padrao
-            if (defaultAddressId) return String(address.id) === String(defaultAddressId)
+            if (defaultAddressId !== undefined && defaultAddressId !== null && defaultAddressId !== '')
+                return String(address.id) === String(defaultAddressId)
 
             return address.default === true ||
                 String(address.default) === '1' ||
@@ -276,8 +318,9 @@ export const useAccountStore = defineStore('account', {
         getPersistedDefaultAddressId() {
             const userKey = this.getDefaultAddressUserKey()
             if (!userKey || this.defaultAddress.userKey !== userKey) return ''
-            const addressId = String(this.defaultAddress.addressId || '')
-            if (!addressId) return ''
+            const raw = this.defaultAddress.addressId
+            if (raw === undefined || raw === null || raw === '') return ''
+            const addressId = String(raw)
             return this.addresses.some((address: any) => String(address.id) === addressId) ? addressId : ''
         },
         restorePersistedDefaultAddress() {
@@ -290,7 +333,7 @@ export const useAccountStore = defineStore('account', {
             }
         },
         async setDefaultAddress(address: any) {
-            if (!address?.id) {
+            if (address?.id === undefined || address?.id === null) {
                 throw new Error('Endereço inválido.')
             }
             if (!this.token) {
@@ -301,14 +344,17 @@ export const useAccountStore = defineStore('account', {
 
             const padrao = address.id
             accountApi.setToken(this.token)
-            try {
-                await accountApi.setAddress({
-                    ...address,
-                    default: 1,
-                    padrao: 1
-                })
-            } catch (error) {
-                console.warn('default address update through address endpoint failed', error)
+            // Principal (id=0) não tem registro em clientes_enderecos — pular o PUT /api/enderecos
+            if (Number(padrao) !== 0) {
+                try {
+                    await accountApi.setAddress({
+                        ...address,
+                        default: 1,
+                        padrao: 1
+                    })
+                } catch (error) {
+                    console.warn('default address update through address endpoint failed', error)
+                }
             }
             await this.setUser({
                 ...this.user,

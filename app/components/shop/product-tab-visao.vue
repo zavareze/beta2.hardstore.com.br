@@ -1,5 +1,6 @@
 <template>
-    <div class="typography" style="margin: -20px -25px 20px;">
+    <div class="typography" style="margin: -20px -25px 20px;" style="display: flex;justify-content: center;
+    align-items: center;">
         <iframe id="ifr" ref="ifrRef" v-if="product.iframe || product.iframe_content"
         style="min-width: 100%; border: none;"
         scrolling="no"

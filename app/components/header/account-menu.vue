@@ -48,7 +48,7 @@
             <div class="account-menu__divider" />
             <AppLink :to="url.account()" class="account-menu__user">
                 <div class="account-menu__user-avatar">
-                    <img :src="accountStore.user.avatar" alt="">
+                    <UserAvatar :src="accountStore.user.avatar" :name="accountStore.user.nome" :size="40" />
                 </div>
                 <div class="account-menu__user-info">
                     <div class="account-menu__user-name">
@@ -92,6 +92,7 @@
             </ul>
         </div>
         <ModalForgotPassword />
+        <ModalFirstAccess />
     </div>
 </template>
 

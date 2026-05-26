@@ -30,3 +30,18 @@
     font-size: 15px;
     margin-bottom: 24px;
 }
+.profile-card__edit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+.profile-card__upload {
+    margin: 0;
+    cursor: pointer;
+
+    &.disabled {
+        opacity: .65;
+        pointer-events: none;
+    }
+}

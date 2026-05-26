@@ -29,7 +29,27 @@
                         </thead>
                         <tbody class="card-table__body card-table__body--merge-rows">
                             <tr v-for="item in order.products" :key="item.id">
-                                <td>{{ item.name }} × {{ item.quantity }}</td>
+                                <td>
+                                    <div class="order-product">
+                                        <AppLink :to="`/shop/products/${item.slug}`">
+                                            <img
+                                                class="order-product__image"
+                                                :src="`https://cdn-hardstore.s3-sa-east-1.amazonaws.com/${item.id}/1280x960/1.webp`"
+                                                :alt="item.name"
+                                            >
+                                        </AppLink>
+                                        <div class="order-product__info">
+                                            <AppLink :to="`/shop/products/${item.slug}`" class="order-product__name">
+                                                {{ item.name }}
+                                            </AppLink>
+                                            <div class="order-product__meta">
+                                                <span>Cód: {{ item.id }}</span>
+                                                <span v-if="item.pn">P/N: {{ item.pn }}</span>
+                                                <span>Qtd: {{ item.quantity }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td>{{ price(item.price*item.quantity) }}</td>
                             </tr>
                         </tbody>
@@ -59,6 +79,7 @@
                 </div>
             </div>
         </div>
+        <OrderStatus v-if="order2.shipping_status" :order="order2.shipping_status" />
         <Payment v-if="order2.status_pedido === 1 && (order2.forma_pagamento === 4 || order2.forma_pagamento === 1)" :order="order2" />
         <div class="row mt-3 no-gutters mx-n2">
             <div class="col-sm-12 col-12 px-2">
@@ -252,3 +273,41 @@ function copiarPixClipboard() {
     copiarParaClipboard(order2.value.emv, 'Código PIX')
 }
 </script>
+
+<style scoped>
+.order-product {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.order-product__image {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: #fafafa;
+}
+.order-product__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.order-product__name {
+    font-size: 14px;
+    line-height: 1.4;
+    color: inherit;
+}
+.order-product__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: #6c757d;
+}
+.order-product__meta span {
+    white-space: nowrap;
+}
+</style>

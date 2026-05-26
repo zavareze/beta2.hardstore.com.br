@@ -4,7 +4,7 @@
             <div class="dashboard__profile card profile-card">
                 <div class="card-body profile-card__body">
                     <div class="profile-card__avatar">
-                        <img :src="account.user.avatar" alt="">
+                        <UserAvatar :src="account.user.avatar" :name="account.user.nome" :size="96" />
                     </div>
                     <div class="profile-card__name">
                         {{ account.user.nome }}
@@ -16,6 +16,19 @@
                         <AppLink :to="url.accountProfile()" class="btn btn-secondary btn-sm">
                             Editar Cadastro
                         </AppLink>
+                        <label class="btn btn-secondary btn-sm profile-card__upload" :class="{ disabled: uploading }">
+                            {{ uploading ? 'Enviando...' : 'Enviar Foto' }}
+                            <input
+                                ref="fileInput"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                hidden
+                                @change="onPhotoSelected"
+                            >
+                        </label>
+                    </div>
+                    <div v-if="uploadError" class="alert alert-danger mt-2 mb-0 py-2 px-3 small">
+                        {{ uploadError }}
                     </div>
                 </div>
             </div>
@@ -80,6 +93,31 @@ const url = useUrl()
 const { price } = usePrice()
 
 useHead({ title: 'Minha Conta' })
+
+const fileInput = ref<HTMLInputElement | null>(null)
+const uploading = ref(false)
+const uploadError = ref('')
+
+async function onPhotoSelected(event: Event) {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) return
+    uploadError.value = ''
+    if (file.size > 2 * 1024 * 1024) {
+        uploadError.value = 'Imagem muito grande (máx. 2MB).'
+        target.value = ''
+        return
+    }
+    uploading.value = true
+    try {
+        await account.uploadAvatar(file)
+    } catch (e: any) {
+        uploadError.value = e?.message || 'Não foi possível enviar a foto.'
+    } finally {
+        uploading.value = false
+        target.value = ''
+    }
+}
 
 const defaultAddress = computed(() => {
     return account.getDefaultAddress() ||

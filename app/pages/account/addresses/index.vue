@@ -18,10 +18,12 @@
                     :badge="isDefaultAddress(address) ? 'Endereço Padrão' : ''"
                     class="addresses-list__item"
                 >
-                    <AppLink :to="url.accountAddress(address)">
+                    <AppLink v-if="!isPrincipal(address)" :to="url.accountAddress(address)">
                         Editar
                     </AppLink>
-                    &nbsp;&nbsp;
+                    <template v-if="!isPrincipal(address)">
+                        &nbsp;&nbsp;
+                    </template>
                     <a
                         v-if="!isDefaultAddress(address)"
                         href="#"
@@ -29,10 +31,10 @@
                     >
                         {{ defaultLoading === String(address.id) ? 'Salvando...' : 'Definir como padrão' }}
                     </a>
-                    <template v-if="!isDefaultAddress(address)">
+                    <template v-if="!isDefaultAddress(address) && !isPrincipal(address)">
                         &nbsp;&nbsp;
                     </template>
-                    <a href="#" @click.prevent="selected = address; useModal().show('my-modal')">
+                    <a v-if="!isPrincipal(address)" href="#" @click.prevent="selected = address; useModal().show('my-modal')">
                         Remover
                     </a>
                 </AddressCard>
@@ -69,6 +71,10 @@ const defaultLoading = ref<string | null>(null)
 
 function isDefaultAddress(address: any) {
     return account.isDefaultAddress(address)
+}
+
+function isPrincipal(address: any) {
+    return Number(address?.id) === 0
 }
 
 async function setDefaultAddress(address: any) {

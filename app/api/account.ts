@@ -34,6 +34,16 @@ const accountApi = {
             body: JSON.stringify(payload)
         }).then(response => response.json())
     },
+    firstAccess: (payload: any) => {
+        return fetch('https://api.hardstore.com.br/api/auth/firstaccess', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).then(response => response.json())
+    },
     magicLink: (payload:any) => {
         return fetch('https://api.hardstore.com.br/api/auth/magiclink/'+payload).then(response => response.json())
     },
@@ -118,6 +128,13 @@ const accountApi = {
     },
     mercadoPagoPayment: (payload) => {
         return axios.post('https://api.hardstore.com.br/api/mercadopago', payload).then(response => response)
+    },
+    uploadAvatar: (file: File) => {
+        const formData = new FormData()
+        formData.append('foto', file)
+        return axios.post('https://api.hardstore.com.br/api/foto', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        }).then(response => response)
     }
 }
 
