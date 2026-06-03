@@ -5,13 +5,7 @@ const SITE_URL = 'https://hardstore.com.br'
 const LOCAL_CATEGORIES_FILE = '/dominios/api.hardstore.com.br/www/servless/categorias.json'
 const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hora
 
-const DB_CONFIG = {
-    host: '127.0.0.1',
-    user: 'revo',
-    password: 'ahan191070-*/@',
-    database: 'hardstore',
-    connectTimeout: 15000,
-}
+// Credenciais do banco vêm de runtimeConfig.db (nuxt.config.ts <- .env). Ver useRuntimeConfig() abaixo.
 
 interface Category {
     id: number
@@ -39,7 +33,8 @@ async function fetchProductSlugsFromDB(): Promise<string[]> {
         return cachedSlugs
     }
 
-    const conn = await mysql.createConnection(DB_CONFIG)
+    const { db } = useRuntimeConfig()
+    const conn = await mysql.createConnection({ ...db, connectTimeout: 15000 })
     try {
         const [rows] = await conn.execute<mysql.RowDataPacket[]>(
             "SELECT url_amigavel FROM produtos WHERE situacao = '' AND url_amigavel != ''",

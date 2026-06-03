@@ -192,7 +192,7 @@ const seoTitle = computed(() => {
 
 const canonicalPath = computed(() => {
     if (props.canonicalPath) return props.canonicalPath
-    if (category.value?.slug) return `/shop/${category.value.slug}`
+    if (category.value?.slug) return `/shop/catalog/${category.value.slug}`
     return url.catalog()
 })
 
@@ -285,13 +285,13 @@ const breadcrumbJsonLd = computed(() => {
 useHead(() => ({
     title: seoTitle.value,
     link: [
-        { rel: 'canonical', href: `https://beta2.hardstore.com.br${canonicalPath.value}` }
+        { rel: 'canonical', href: `https://hardstore.com.br${canonicalPath.value}` }
     ],
     meta: [
         { name: 'description', content: description.value },
         { property: 'og:title', content: seoTitle.value },
         { property: 'og:description', content: description.value },
-        { property: 'og:url', content: `https://beta2.hardstore.com.br${canonicalPath.value}` },
+        { property: 'og:url', content: `https://hardstore.com.br${canonicalPath.value}` },
     ],
     script: breadcrumbJsonLd.value ? [
         { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbJsonLd.value) }

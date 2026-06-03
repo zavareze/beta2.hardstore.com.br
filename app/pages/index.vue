@@ -164,6 +164,13 @@ async function loadColumns () {
 
 useHead(computed(() => ({
     title: '',
+    link: [
+        { rel: 'canonical', href: 'https://hardstore.com.br/' }
+    ],
+    meta: [
+        { property: 'og:url', content: 'https://hardstore.com.br/' },
+        { property: 'og:type', content: 'website' }
+    ],
     script: [
         {
             key: 'schema-org-website',

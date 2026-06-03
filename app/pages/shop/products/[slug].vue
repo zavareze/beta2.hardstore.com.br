@@ -53,6 +53,11 @@ const sku = computed(() => {
     return String(product.value.id)
 })
 
+// Só envia mpn quando há GTIN. Sem GTIN, o `pn` é código interno compartilhado por
+// vários PCs (ex.: PC-RTX5070-12GB-PRO), e o crawl do Google funde produtos distintos
+// por marca+MPN. Sem mpn, cada produto fica único pelo sku/URL próprios.
+const hasGtin = computed(() => !!(product.value?.gtins && product.value.gtins.length > 0))
+
 const brand = computed(() => {
     if (!product.value) return ''
     if (product.value.brand)
@@ -78,7 +83,7 @@ const breadcrumb = computed(() => {
             '@type': 'ListItem',
             position: i + 2,
             name: cat.name,
-            item: 'https://www.hardstore.com.br/shop/' + cat.slug
+            item: 'https://hardstore.com.br/shop/catalog/' + cat.slug
         })
     })
     items.push({
@@ -92,6 +97,18 @@ const breadcrumb = computed(() => {
 const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
 useHead(computed(() => ({
+    title: product.value?.name || '',
+    link: product.value?.slug ? [
+        { rel: 'canonical', href: `https://hardstore.com.br/shop/products/${product.value.slug}` }
+    ] : [],
+    meta: product.value?.id ? [
+        { name: 'description', content: description.value.substring(0, 160) },
+        { property: 'og:title', content: product.value.name },
+        { property: 'og:description', content: description.value.substring(0, 160) },
+        { property: 'og:url', content: `https://hardstore.com.br/shop/products/${product.value.slug}` },
+        { property: 'og:type', content: 'product' },
+        { property: 'og:image', content: `https://cdn-hardstore.s3-sa-east-1.amazonaws.com/${product.value.id}/1280x960/1.webp` }
+    ] : [],
     script: product.value?.id ? [
         {
             type: 'application/ld+json',
@@ -110,7 +127,7 @@ useHead(computed(() => ({
                 image: [1, 2, 3, 4, 5].map(n => `https://cdn-hardstore.s3-sa-east-1.amazonaws.com/${product.value!.id}/1280x960/${n}.webp`),
                 description: description.value,
                 sku: sku.value,
-                ...(product.value.pn ? { mpn: product.value.pn } : {}),
+                ...(hasGtin.value && product.value.pn ? { mpn: product.value.pn } : {}),
                 brand: { '@type': 'Brand', name: brand.value },
                 offers: {
                     '@type': 'Offer',

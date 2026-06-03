@@ -2,12 +2,16 @@ User-Agent: *
 Allow: /
 
 Disallow: /account/
+Disallow: /api/
+Disallow: /cotacao/
+Disallow: /id/
+Disallow: /login
+Disallow: /offcanvas-cart
 Disallow: /shop/cart
 Disallow: /shop/checkout/
-Disallow: /shop/payment
-Disallow: /shop/wishlist
 Disallow: /shop/compare
+Disallow: /shop/payment
 Disallow: /shop/track-order
-Disallow: /offcanvas-cart
+Disallow: /shop/wishlist
 
 Sitemap: https://hardstore.com.br/sitemap.xml

@@ -28,8 +28,8 @@ export function toGA4Item(
     const item: GA4Item = {
         item_id: String(product.id),
         item_name: product.name,
-        price: price ?? product.price,
-        quantity,
+        price: Number(price ?? product.price) || 0,
+        quantity: Number(quantity) || 1,
     }
     if (product.brand?.value) item.item_brand = product.brand.value
     if (product.tags_categoria?.[0]?.name) item.item_category = product.tags_categoria[0].name
@@ -100,12 +100,24 @@ export const useEcommerceTracking = () => {
             shipping: number,
             coupon?: string
         ) {
+            const numValue    = Number(value) || 0
+            const numTax      = Number(tax) || 0
+            const numShipping = Number(shipping) || 0
+            if (!transactionId || numValue <= 0 || !items?.length) {
+                console.warn('[GA4] purchase ignorado: dados inválidos', { transactionId, value: numValue, items })
+                return
+            }
+            const cleanItems = items.map(i => ({
+                ...i,
+                price: Number(i.price) || 0,
+                quantity: Number(i.quantity) || 1,
+            }))
             push('purchase', {
                 transaction_id: transactionId,
-                value,
-                tax,
-                shipping,
-                items,
+                value: numValue,
+                tax: numTax,
+                shipping: numShipping,
+                items: cleanItems,
                 ...(coupon ? { coupon } : {})
             })
         }

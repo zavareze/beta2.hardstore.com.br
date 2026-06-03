@@ -206,6 +206,12 @@ export default defineNuxtConfig({
 
 
     runtimeConfig: {
+        db: {
+            host: process.env.DB_HOST || '127.0.0.1',
+            user: process.env.DB_USER || '',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_DATABASE || 'hardstore'
+        },
         public: {
             routerBase: process.env.ROUTER_BASE || '/',
             gtmId: process.env.NUXT_PUBLIC_GTM_ID || 'GTM-K6QS3D8',
