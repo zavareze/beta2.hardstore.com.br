@@ -1,0 +1,39 @@
+name: Deploy Hardstore
+
+# Dispara o deploy automaticamente a cada push na branch master
+on:
+  push:
+    branches: [master]
+  # Permite disparar manualmente pela aba "Actions" do GitHub
+  workflow_dispatch:
+
+# Evita dois deploys rodando ao mesmo tempo
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Roda no runner self-hosted instalado no seu servidor
+    runs-on: self-hosted
+    steps:
+      - name: Deploy (build + restart PM2)
+        run: |
+          set -e
+          # >>> CONFIRMAR: caminho absoluto do projeto no servidor <<<
+          cd /CAMINHO/DO/PROJETO/NO/SERVIDOR
+
+          echo "==> Atualizando codigo (master)"
+          git fetch origin master
+          git reset --hard origin/master
+
+          echo "==> Instalando dependencias"
+          npm ci
+
+          echo "==> Build de producao"
+          npm run build
+
+          echo "==> Recarregando PM2 (zero-downtime)"
+          pm2 reload Hardstore --update-env
+
+          echo "==> Deploy concluido com sucesso"
